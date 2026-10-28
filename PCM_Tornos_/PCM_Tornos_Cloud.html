@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="pcm-api-base" content="/api">
+<title>PCM — Tornos Mecânicos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--pri:#1f4e79;--pri2:#2b6cb0;--acc:#e8830c;--ok:#2e9e5b;--warn:#e0a800;--bad:#d64545;--bg:#f2f5f9;--card:#fff;--tx:#1d2733;--mut:#6b7785;--bd:#dde3ea;--side:#14283d}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.45}
+h1,h2,h3,h4{margin:0 0 .5rem}h1{font-size:1.5rem}h2{font-size:1.15rem}h3{font-size:1rem}
+a{color:var(--pri2)}small,.mut{color:var(--mut)}
+button{font:inherit;cursor:pointer}
+.shell{display:flex;min-height:100vh}
+aside{width:236px;background:var(--side);color:#cfd9e6;flex:none;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:auto}
+aside .brand{padding:16px 16px 12px;font-weight:700;color:#fff;font-size:1.02rem;border-bottom:1px solid #ffffff1f}
+aside .brand small{display:block;color:#8fa6bf;font-weight:400;font-size:.75rem}
+aside nav a{display:flex;gap:10px;align-items:center;padding:10px 16px;color:#cfd9e6;text-decoration:none;border-left:3px solid transparent}
+aside nav a:hover{background:#ffffff12}aside nav a.on{background:#ffffff1c;border-left-color:var(--acc);color:#fff}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+header.top{background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px;padding:10px 20px;position:sticky;top:0;z-index:20}
+header.top .title{font-weight:700;color:var(--pri);flex:1}
+.burger{display:none;background:none;border:0;font-size:1.4rem}
+#view{padding:20px;max-width:1500px;width:100%}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h2,.card h3{color:var(--pri)}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}.g3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.kpi{background:#fff;border:1px solid var(--bd);border-left:5px solid var(--bd);border-radius:10px;padding:12px 14px}
+.kpi .l{color:var(--mut);font-size:.78rem;text-transform:uppercase;letter-spacing:.03em}.kpi .v{font-size:1.55rem;font-weight:700;margin:2px 0}.kpi .s{font-size:.78rem;color:var(--mut)}
+.kpi.green{border-left-color:var(--ok)}.kpi.yellow{border-left-color:var(--warn)}.kpi.red{border-left-color:var(--bad)}.kpi.blue{border-left-color:var(--pri2)}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.75rem;font-weight:600;color:#fff;white-space:nowrap}
+.badge.green{background:var(--ok)}.badge.yellow{background:var(--warn);color:#3d2f00}.badge.red{background:var(--bad)}.badge.gray{background:#8795a5}.badge.blue{background:var(--pri2)}.badge.orange{background:var(--acc)}
+.btn{border:1px solid var(--bd);background:#fff;border-radius:7px;padding:7px 13px;color:var(--tx)}.btn:hover{background:#eef3f8}
+.btn.pri{background:var(--pri);color:#fff;border-color:var(--pri)}.btn.pri:hover{background:#173d5f}.btn.acc{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn.bad{background:#fff;color:var(--bad);border-color:var(--bad)}.btn.sm{padding:3px 9px;font-size:.8rem}.btn.ghost{background:transparent}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row.sp{justify-content:space-between}
+.chartbox{position:relative;height:280px}.chartbox.s{height:220px}
+.tabs{display:flex;gap:2px;flex-wrap:wrap;border-bottom:2px solid var(--bd);margin-bottom:14px}
+.tabs button{border:0;background:none;padding:9px 14px;color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button.on{color:var(--pri);border-bottom-color:var(--acc);font-weight:600}
+.tbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+input,select,textarea{font:inherit;border:1px solid #c5cfda;border-radius:7px;padding:7px 9px;background:#fff;color:var(--tx);max-width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid #2b6cb055;border-color:var(--pri2)}
+.tbl .scroll{overflow-x:auto}table{border-collapse:collapse;width:100%}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #e8edf2;vertical-align:top}
+th{background:#f0f4f9;color:#38506a;font-size:.78rem;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+th[data-ts]{cursor:pointer}tr:hover td{background:#fafcff}td.num,th.num{text-align:right}
+.pager{display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:8px;color:var(--mut)}
+.empty{padding:22px;text-align:center;color:var(--mut)}
+.mback{position:fixed;inset:0;background:#0a1624aa;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:4vh 12px;overflow:auto}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:560px;box-shadow:0 20px 60px #0006}.modal.wide{max-width:860px}
+.mhead{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--bd)}.mhead h3{margin:0;color:var(--pri)}
+.x{border:0;background:none;font-size:1.6rem;line-height:1;color:var(--mut)}.mbody{padding:16px 18px}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 14px}.fgrid label{display:flex;flex-direction:column;gap:3px}.fgrid label span{font-size:.78rem;color:var(--mut);font-weight:600}
+.fgrid .full{grid-column:1/-1}.fgrid .chk{flex-direction:row;align-items:center;gap:8px}.fgrid small{color:var(--mut);font-size:.72rem}
+.checks{display:flex;flex-wrap:wrap;gap:6px 14px}.checks label{flex-direction:row;align-items:center;gap:6px}
+.ferr{background:#fdecec;border:1px solid #f3b9b9;color:#8c1d1d;border-radius:8px;padding:9px 12px;margin-top:12px;white-space:pre-line}
+.toast{position:fixed;bottom:18px;right:18px;background:#1d2733;color:#fff;padding:11px 16px;border-radius:9px;z-index:200;max-width:360px;box-shadow:0 6px 20px #0004;white-space:pre-line}.toast.err{background:#a42a2a}.toast.ok{background:#1f7a46}
+dl.kv{display:grid;grid-template-columns:150px 1fr;gap:5px 12px;margin:0}dl.kv dt{color:var(--mut)}dl.kv dd{margin:0}
+.note{background:#fff8e1;border:1px solid #f0dc9a;border-radius:8px;padding:9px 12px;margin:8px 0;font-size:.85rem}
+.note.info{background:#eaf3fc;border-color:#b9d6f2}
+.note.bad{background:#fdecec;border-color:#f3b9b9}
+.tl{border-left:3px solid var(--bd);margin-left:6px;padding-left:16px}.tl .ev{position:relative;margin-bottom:12px}.tl .ev:before{content:"";position:absolute;left:-23px;top:5px;width:11px;height:11px;border-radius:50%;background:var(--pri2);border:2px solid #fff}
+.tl .ev.red:before{background:var(--bad)}.tl .ev.green:before{background:var(--ok)}.tl .ev.yellow:before{background:var(--warn)}
+.bell{position:relative}.bell .cnt{position:absolute;top:-6px;right:-8px;background:var(--bad);color:#fff;border-radius:10px;font-size:.68rem;padding:1px 6px}
+.dd{position:absolute;right:0;top:34px;width:340px;max-height:60vh;overflow:auto;background:#fff;border:1px solid var(--bd);border-radius:10px;box-shadow:0 10px 30px #0003;z-index:50}
+.dd a{display:block;padding:9px 12px;border-bottom:1px solid #eef2f6;text-decoration:none;color:var(--tx);font-size:.85rem}.dd a:hover{background:#f4f8fc}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.dot.red{background:var(--bad)}.dot.yellow{background:var(--warn)}.dot.green{background:var(--ok)}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#14283d,#1f4e79);padding:16px}
+.login .box{background:#fff;border-radius:14px;padding:26px;width:100%;max-width:400px}.login input{width:100%;margin-bottom:10px}
+.demo{font-size:.8rem;background:#eef3f8;border-radius:8px;padding:8px 10px;margin-top:12px}
+.formula{font-family:ui-monospace,Menlo,Consolas,monospace;background:#f0f4f9;border-radius:6px;padding:2px 7px;font-size:.85rem}
+.prose h3{margin-top:18px}.prose p,.prose li{max-width:900px}
+@media(max-width:860px){aside{position:fixed;left:-250px;z-index:60;transition:left .2s}aside.open{left:0}.burger{display:block}#view{padding:12px}.fgrid{grid-template-columns:1fr}dl.kv{grid-template-columns:110px 1fr}.dd{position:fixed;left:8px;right:8px;width:auto}}
+@media print{aside,header.top,.noprint{display:none!important}#view{padding:0}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+/* =====================================================================
+   PCM Tornos — interface web conectada a API e PostgreSQL.
+   Os dados operacionais são carregados e persistidos no servidor.
+   ===================================================================== */
+const LS_KEY = 'pcm_tornos_db_v1', SESSION_KEY = 'pcm_tornos_session_v1';
+const API_BASE = (document.querySelector('meta[name="pcm-api-base"]')?.content || '/api').replace(/\/$/, '');
+let cloudToken = sessionStorage.getItem('pcm_cloud_token_v1') || null;
+let cloudVersion = null, cloudQueue = Promise.resolve(), cloudConflict = false, cloudInitialized = false;
+class AppError extends Error {}
+async function apiRequest(path, options = {}, auth = true) {
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
+  if (auth && cloudToken) headers.Authorization = 'Bearer ' + cloudToken;
+  const response = await fetch(API_BASE + path, Object.assign({}, options, { headers }));
+  let body = {}; try { body = await response.json(); } catch (_) {}
+  if (!response.ok) throw new AppError(body.error || `Falha no servidor (HTTP ${response.status}).`);
+  return body;
+}
+
+/* ---------- utilitários ---------- */
+const E = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const toISO = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const toISODT = d => `${toISO(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const P = s => { if (!s) return null; if (s instanceof Date) return s; const d = new Date(String(s).length === 10 ? s + 'T00:00' : s); return isNaN(d) ? null : d; };
+const fD = s => { const d = P(s); return d ? `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}` : '—'; };
+const fDT = s => { const d = P(s); return d ? `${fD(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}` : '—'; };
+const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const fR = v => v == null || isNaN(v) ? '—' : BRL.format(v);
+const fN = (v, d = 1) => v == null || isNaN(v) ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fP = (v, d = 1) => v == null || isNaN(v) ? '—' : fN(v, d) + '%';
+const hoursBetween = (a, b) => { a = P(a); b = P(b); return a && b ? (b - a) / 36e5 : null; };
+const addDays = (d, n) => { const x = new Date(P(d)); x.setDate(x.getDate() + n); return x; };
+const addMonths = (d, n) => { const x = new Date(P(d)); x.setMonth(x.getMonth() + n); return x; };
+const startOfDay = d => { const x = new Date(P(d)); x.setHours(0, 0, 0, 0); return x; };
+const round = (v, d = 2) => v == null ? null : Math.round(v * 10 ** d) / 10 ** d;
+const sum = (a, f = x => x) => a.reduce((s, x) => s + (Number(f(x)) || 0), 0);
+const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+/* SHA-256 em JS puro (protótipo; em produção usar bcrypt/argon2 no servidor) */
+const _pr = []; for (let n = 2; _pr.length < 64; n++) if (_pr.every(p => n % p)) _pr.push(n);
+const _fr = x => Math.floor((x - Math.floor(x)) * 4294967296) >>> 0;
+const _K = _pr.map(p => _fr(Math.cbrt(p))), _H0 = _pr.slice(0, 8).map(p => _fr(Math.sqrt(p)));
+const _rotr = (x, n) => (x >>> n) | (x << (32 - n));
+function sha256(msg) {
+  const b = [...unescape(encodeURIComponent(msg))].map(c => c.charCodeAt(0)), l = b.length * 8;
+  b.push(0x80); while (b.length % 64 !== 56) b.push(0);
+  for (let i = 7; i >= 0; i--) b.push(i >= 4 ? 0 : (l >>> (i * 8)) & 255);
+  let H = _H0.slice();
+  for (let o = 0; o < b.length; o += 64) {
+    const w = new Array(64);
+    for (let i = 0; i < 16; i++) w[i] = (b[o + 4 * i] << 24 | b[o + 4 * i + 1] << 16 | b[o + 4 * i + 2] << 8 | b[o + 4 * i + 3]) >>> 0;
+    for (let i = 16; i < 64; i++) {
+      const s0 = _rotr(w[i - 15], 7) ^ _rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3), s1 = _rotr(w[i - 2], 17) ^ _rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) >>> 0;
+    }
+    let [a, bb, c, d, e, f, g, h] = H;
+    for (let i = 0; i < 64; i++) {
+      const S1 = _rotr(e, 6) ^ _rotr(e, 11) ^ _rotr(e, 25), ch = (e & f) ^ (~e & g), t1 = (h + S1 + ch + _K[i] + w[i]) >>> 0;
+      const S0 = _rotr(a, 2) ^ _rotr(a, 13) ^ _rotr(a, 22), mj = (a & bb) ^ (a & c) ^ (bb & c), t2 = (S0 + mj) >>> 0;
+      h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = bb; bb = a; a = (t1 + t2) >>> 0;
+    }
+    const v = [a, bb, c, d, e, f, g, h]; H = H.map((x, i) => (x + v[i]) >>> 0);
+  }
+  return H.map(v => v.toString(16).padStart(8, '0')).join('');
+}
+function hashPw(pw, salt) { let h = sha256(salt + pw); for (let i = 0; i < 1500; i++) h = sha256(h + salt); return h; }
+const newSalt = () => Array.from({ length: 4 }, () => Math.floor(Math.random() * 4294967296).toString(16)).join('');
+
+/* ---------- constantes de domínio ---------- */
+const ROLES = { admin: 'Administrador', gestor: 'Gestor de manutenção', tecnico: 'Técnico de manutenção', operador: 'Operador' };
+const PERMS = {
+  admin: ['*'],
+  gestor: ['equip.write', 'failure.report', 'failure.write', 'os.view', 'os.write', 'os.update', 'plan.write', 'stock.view', 'stock.write', 'stock.move', 'cost.view', 'cost.write', 'indicator.view', 'indicator.write', 'report.view'],
+  tecnico: ['failure.report', 'failure.write', 'os.view', 'os.update', 'stock.view', 'indicator.view'],
+  operador: ['failure.report']
+};
+const CRIT = ['Baixa', 'Média', 'Alta', 'Crítica'];
+const CAUSES = ['mecânica', 'elétrica', 'eletrônica', 'hidráulica', 'operacional', 'outra', 'pendente'];
+const FSTATUS = ['Aberta', 'Em reparo', 'Reparada', 'Cancelada'];
+const OSTATUS = ['Aberta', 'Planejada', 'Em execução', 'Aguardando peças', 'Concluída', 'Encerrada', 'Cancelada'];
+const OSTYPES = ['Corretiva', 'Preventiva', 'Preditiva', 'Melhoria'];
+const PRIOR = ['Baixa', 'Média', 'Alta', 'Urgente'];
+const TRANS = { 'Aberta': ['Planejada', 'Em execução', 'Cancelada'], 'Planejada': ['Aberta', 'Em execução', 'Cancelada'], 'Em execução': ['Aguardando peças', 'Concluída', 'Cancelada'], 'Aguardando peças': ['Em execução', 'Cancelada'], 'Concluída': ['Encerrada', 'Em execução'], 'Encerrada': [], 'Cancelada': [] };
+const ITEM_CATS = ['Rolamentos', 'Correias', 'Fusíveis', 'Contatores', 'Relés', 'Motores', 'Sensores', 'Lubrificantes', 'Óleos hidráulicos', 'Fluidos de corte', 'Filtros', 'Parafusos', 'Ferramentas', 'Materiais de limpeza', 'EPIs', 'Outros'];
+const COST_CATS = ['Peças e materiais', 'Mão de obra', 'Serviços terceirizados', 'Indisponibilidade', 'Reajuste', 'Outros'];
+const DEFAULT_SETTINGS = {
+  company: '', goalAvail: 95, goalMtbf: 150, goalMttr: 8, goalCompliance: 90,
+  laborRate: 45, downtimeCostPerHour: 0, minFailures: 3, minHours: 100, alertDays: 7
+};
+
+/* ---------- banco ---------- */
+let db = null;
+const nextSeq = (k) => { db.seq[k] = (db.seq[k] || 0) + 1; return db.seq[k]; };
+const uid = (k, w = 4) => `${k}${String(nextSeq(k)).padStart(w, '0')}`;
+function saveDB() {
+  if (!cloudToken || !db) throw new AppError('Sessão do servidor indisponível. Entre novamente antes de salvar.');
+  if (cloudConflict) throw new AppError('Há alterações de outro usuário. Atualize a página antes de continuar.');
+  const snapshot = JSON.parse(JSON.stringify(db));
+  const tokenAtSave = cloudToken;
+  cloudQueue = cloudQueue.catch(() => {}).then(async () => {
+    if (cloudConflict) return;
+    const result = await apiRequest('/state', { method: 'PUT', headers: { 'Authorization': 'Bearer ' + tokenAtSave }, body: JSON.stringify({ version: cloudVersion, data: snapshot }) }, false);
+    cloudVersion = result.version;
+  }).catch(err => {
+    if (/conflito|atualiz/i.test(err.message) || /409/.test(err.message)) cloudConflict = true;
+    console.error('Falha ao sincronizar PCM:', err);
+    if (typeof toast === 'function') toast('Não foi possível confirmar o salvamento no servidor. ' + err.message + (cloudConflict ? ' Atualize a página para carregar os dados mais recentes.' : ''), 'err');
+  });
+  return cloudQueue;
+}
+function createEmptyDB() {
+  db = { v: 1, demo: false, seq: {}, users: [], equipment: [], records: [], failures: [], workOrders: [], plans: [], items: [], movements: [], suppliers: [], costs: [], audit: [], settings: { ...DEFAULT_SETTINGS } };
+  const salt = newSalt();
+  db.users.push({ id: uid('U', 3), name: 'Administrador', username: 'admin', role: 'admin', active: true, salt, hash: hashPw('Admin@12345', salt) });
+  return db;
+}
+function loadDB() {
+  try {
+    const s = localStorage.getItem(LS_KEY);
+    if (s) {
+      db = JSON.parse(s);
+      // Migra automaticamente instalações antigas que ainda continham dados fictícios.
+      if (db.demo === true) { createEmptyDB(); saveDB(); return; }
+      migrate(); return;
+    }
+  } catch (e) { }
+  createEmptyDB(); try { saveDB(); } catch (e) { }
+}
+function migrate() { db.settings = Object.assign({}, DEFAULT_SETTINGS, db.settings || {}); db.audit = db.audit || []; db.demo = false; }
+function clearOperationalData() {
+  ['equipment', 'records', 'failures', 'workOrders', 'plans', 'items', 'movements', 'suppliers', 'costs'].forEach(k => { db[k] = []; });
+  db.audit = [];
+  audit('limpeza', 'sistema', '', 'Registros operacionais apagados; usuários e configurações preservados.');
+  saveDB();
+}
+function audit(action, entity, id, detail) {
+  const u = cur(); db.audit.unshift({ at: toISODT(new Date()), user: u ? u.username : 'sistema', action, entity, id, detail: detail || '' });
+  if (db.audit.length > 600) db.audit.length = 600;
+}
+
+/* ---------- autenticação e permissões ---------- */
+let _session = null;
+const cur = () => _session ? db.users.find(u => u.id === _session && u.active) || null : null;
+function login(username, password) {
+  const u = db.users.find(x => x.username === String(username).trim().toLowerCase());
+  if (!u || !u.active || hashPw(password, u.salt) !== u.hash) throw new AppError('Usuário ou senha inválidos.');
+  _session = u.id; try { localStorage.setItem(SESSION_KEY, u.id); } catch (e) { }
+  audit('login', 'user', u.id); saveDB(); return u;
+}
+function restoreSession() { try { const s = localStorage.getItem(SESSION_KEY); if (s && db.users.find(u => u.id === s && u.active)) _session = s; } catch (e) { } }
+function logout() { _session = null; cloudToken = null; cloudVersion = null; cloudConflict = false; try { sessionStorage.removeItem('pcm_cloud_token_v1'); sessionStorage.removeItem('pcm_cloud_user_v1'); localStorage.removeItem(SESSION_KEY); } catch (e) { } }
+function can(p) { const u = cur(); if (!u) return false; const r = PERMS[u.role] || []; return r.includes('*') || r.includes(p); }
+function need(p) { if (!can(p)) throw new AppError('Você não tem permissão para esta ação.'); }
+
+/* ---------- consultas básicas ---------- */
+const eq = id => db.equipment.find(e => e.id === id);
+const eqName = id => { const e = eq(id); return e ? `${e.code} — ${e.name}` : '—'; };
+const item = id => db.items.find(i => i.id === id);
+const done = o => o.status === 'Concluída' || o.status === 'Encerrada';
+const activeOS = o => !['Concluída', 'Encerrada', 'Cancelada'].includes(o.status);
+const userName = id => { const u = db.users.find(x => x.id === id || x.username === id); return u ? u.name : (id || '—'); };
+
+function equipStatus(e) {
+  if (db.workOrders.some(o => o.equipId === e.id && (o.status === 'Em execução' || o.status === 'Aguardando peças'))) return 'manutencao';
+  if (db.failures.some(f => f.equipId === e.id && f.status !== 'Cancelada' && f.needsStop && f.stopStart && !f.stopEnd)) return 'indisponivel';
+  return e.status === 'indisponivel' ? 'indisponivel' : 'operacional';
+}
+const STATUS_LABEL = { operacional: 'Operacional', manutencao: 'Em manutenção', indisponivel: 'Indisponível' };
+function equipHasHistory(id) {
+  return db.failures.some(f => f.equipId === id) || db.workOrders.some(o => o.equipId === id) || db.records.some(r => r.equipId === id) ||
+    db.costs.some(c => c.equipId === id) || db.plans.some(p => p.equipId === id) || db.movements.some(m => m.equipId === id);
+}
+
+/* ---------- equipamentos ---------- */
+function saveEquip(v) {
+  need('equip.write');
+  const errs = [];
+  if (!v.code) errs.push('Informe o código patrimonial/interno.');
+  if (!v.name) errs.push('Informe o nome do equipamento.');
+  if (db.equipment.some(e => e.code.toLowerCase() === String(v.code).toLowerCase() && e.id !== v.id)) errs.push('Já existe um equipamento com este código.');
+  ['acqValue', 'estValue', 'power', 'rpm', 'hours'].forEach(k => { if (v[k] != null && v[k] < 0) errs.push('Valores numéricos não podem ser negativos.'); });
+  if (v.acqDate && v.instDate && P(v.instDate) < P(v.acqDate)) errs.push('A data de instalação não pode ser anterior à aquisição.');
+  if (v.mfgDate && v.acqDate && P(v.acqDate) < P(v.mfgDate)) errs.push('A data de aquisição não pode ser anterior à fabricação.');
+  if (errs.length) throw new AppError(errs.join('\n'));
+  if (v.id) { const e = eq(v.id); Object.assign(e, v); audit('editar', 'equipamento', e.id, e.code); }
+  else { const e = Object.assign({ docs: [], archived: false, status: 'operacional', hours: 0 }, v, { id: uid('EQ', 3) }); db.equipment.push(e); audit('criar', 'equipamento', e.id, e.code); }
+  saveDB();
+}
+function archiveEquip(id, flag) { need('equip.write'); const e = eq(id); e.archived = flag; audit(flag ? 'arquivar' : 'reativar', 'equipamento', id, e.code); saveDB(); }
+function deleteEquip(id) {
+  need('equip.write');
+  if (equipHasHistory(id)) throw new AppError('Este equipamento possui histórico de manutenção ou registros financeiros e não pode ser excluído. Utilize o arquivamento.');
+  db.equipment = db.equipment.filter(e => e.id !== id); audit('excluir', 'equipamento', id); saveDB();
+}
+function addDoc(id, doc) { need('equip.write'); eq(id).docs.push(doc); audit('anexar', 'equipamento', id, doc.name); saveDB(); }
+function removeDoc(id, idx) { need('equip.write'); eq(id).docs.splice(idx, 1); saveDB(); }
+
+/* ---------- registros de operação ---------- */
+function saveRecord(v) {
+  need('indicator.write');
+  const errs = [];
+  if (!v.equipId) errs.push('Selecione o equipamento.');
+  if (!v.start || !v.end) errs.push('Informe data inicial e final.');
+  else if (P(v.end) < P(v.start)) errs.push('A data final não pode ser anterior à inicial.');
+  if (v.scheduled == null || v.scheduled <= 0) errs.push('Horas programadas devem ser maiores que zero.');
+  if (v.operated == null || v.operated < 0) errs.push('Informe as horas efetivamente operadas.');
+  if (v.scheduled != null && v.operated != null && v.operated > v.scheduled + 0.001) errs.push('Horas operadas não podem exceder as horas programadas.');
+  if (v.start && v.end && P(v.end) >= P(v.start)) {
+    const days = (P(v.end) - P(v.start)) / 864e5 + 1;
+    if (v.scheduled > days * 24) errs.push('Horas programadas excedem o total de horas do período.');
+    if (db.records.some(r => r.equipId === v.equipId && r.id !== v.id && P(r.start) <= P(v.end) && P(r.end) >= P(v.start))) errs.push('Já existe registro de operação sobreposto para este equipamento (evita contar o mesmo período duas vezes).');
+  }
+  if (errs.length) throw new AppError(errs.join('\n'));
+  const e = eq(v.equipId);
+  if (v.id) { const r = db.records.find(x => x.id === v.id); e.hours = (e.hours || 0) + v.operated - r.operated; Object.assign(r, v); }
+  else { db.records.push(Object.assign({}, v, { id: uid('OP', 4) })); e.hours = (e.hours || 0) + v.operated; }
+  audit('salvar', 'operação', v.equipId, `${v.start}→${v.end}`); saveDB();
+}
+function deleteRecord(id) {
+  need('indicator.write'); const r = db.records.find(x => x.id === id); if (!r) return;
+  const e = eq(r.equipId); e.hours = Math.max(0, (e.hours || 0) - r.operated);
+  db.records = db.records.filter(x => x.id !== id); audit('excluir', 'operação', id); saveDB();
+}
+
+/* ---------- falhas ---------- */
+const failureNo = f => f.number;
+function validateFailure(v) {
+  const errs = [];
+  if (!v.equipId) errs.push('Selecione o equipamento.');
+  if (!v.date) errs.push('Informe data e hora da ocorrência.');
+  if (!v.description) errs.push('Descreva o defeito.');
+  if (!v.criticality) errs.push('Informe o grau de criticidade.');
+  if (v.needsStop && !v.stopStart) errs.push('Informe a data/hora da parada quando houver necessidade de parada.');
+  if (v.stopStart && v.stopEnd && P(v.stopEnd) < P(v.stopStart)) errs.push('A liberação não pode ser anterior à parada.');
+  if (v.stopStart && v.date && P(v.stopStart) < new Date(P(v.date).getTime() - 864e5 * 2)) errs.push('A parada está muito anterior à data da ocorrência.');
+  if (v.repairHours != null && v.repairHours < 0) errs.push('Tempo de reparo inválido.');
+  if (v.stopStart && v.stopEnd && v.repairHours != null && v.repairHours > hoursBetween(v.stopStart, v.stopEnd) + 0.01) errs.push('O tempo de reparo (trabalho técnico) não pode exceder o tempo de indisponibilidade.');
+  if (v.status === 'Reparada' && v.needsStop && !v.stopEnd) errs.push('Para marcar como reparada com parada, informe a data/hora de liberação.');
+  if (v.date && P(v.date) > new Date(Date.now() + 36e5)) errs.push('A data da ocorrência está no futuro.');
+  if (db.failures.some(f => f.id !== v.id && f.equipId === v.equipId && f.date === v.date && f.description.trim().toLowerCase() === String(v.description).trim().toLowerCase())) errs.push('Ocorrência duplicada (mesmo equipamento, data/hora e descrição).');
+  if (errs.length) throw new AppError(errs.join('\n'));
+}
+function saveFailure(v, opts = {}) {
+  need(v.id ? 'failure.write' : 'failure.report');
+  if (!v.id) { v.status = v.status || 'Aberta'; v.reporter = v.reporter || cur().id; if (cur().role === 'operador') { v.status = 'Aberta'; v.cause = v.cause || ''; v.causeClass = 'pendente'; } }
+  if (v.funcional == null) v.funcional = true;
+  v.downtime = v.stopStart && v.stopEnd ? round(hoursBetween(v.stopStart, v.stopEnd), 2) : null;
+  validateFailure(v);
+  if (!v.causeClass) v.causeClass = 'pendente';
+  if (v.id) { const f = db.failures.find(x => x.id === v.id); Object.assign(f, v); audit('editar', 'falha', f.number); }
+  else { const f = Object.assign({ attachments: [] }, v, { id: uid('FL', 4), number: 'F-' + String(nextSeq('Fnum')).padStart(4, '0') }); db.failures.push(f); audit('criar', 'falha', f.number, eqName(f.equipId)); v.id = f.id; }
+  saveDB(); return v.id;
+}
+function failureRecurrence(f) {
+  return db.failures.filter(x => x.equipId === f.equipId && x.status !== 'Cancelada' && x.id !== f.id && f.component && x.component === f.component && P(x.date) < P(f.date)).length;
+}
+function osFromFailure(fid) {
+  need('os.write'); const f = db.failures.find(x => x.id === fid);
+  if (db.workOrders.some(o => o.failureId === fid && o.status !== 'Cancelada')) throw new AppError('Já existe OS ativa para esta falha.');
+  const pr = { 'Baixa': 'Baixa', 'Média': 'Média', 'Alta': 'Alta', 'Crítica': 'Urgente' }[f.criticality];
+  return saveOS({ equipId: f.equipId, type: 'Corretiva', failureId: fid, description: `Corrigir: ${f.description}${f.component ? ' (' + f.component + ')' : ''}`, priority: pr, responsible: '', plannedStart: toISODT(new Date()) });
+}
+
+/* ---------- ordens de serviço ---------- */
+const osParts = o => sum(o.items || [], l => l.qty * l.unitCost);
+const osCost = o => osParts(o) + (o.laborCost || 0) + (o.thirdCost || 0) + (o.otherCost || 0);
+/* Custo REAL = lançado no encerramento da OS (status "Encerrada"). Antes disso, os valores da OS são estimativas. */
+const costsPosted = o => o.status === 'Encerrada';
+const osDuration = o => hoursBetween(o.actualStart, o.actualEnd);
+function saveOS(v) {
+  need(v.id ? 'os.update' : 'os.write');
+  const errs = [];
+  if (!v.equipId) errs.push('Selecione o equipamento.');
+  if (!v.type) errs.push('Informe o tipo de manutenção.');
+  if (!v.description) errs.push('Descreva a atividade.');
+  if (!v.plannedStart) errs.push('Informe a data planejada de início.');
+  if (v.plannedStart && v.plannedEnd && P(v.plannedEnd) < P(v.plannedStart)) errs.push('O fim planejado não pode ser anterior ao início.');
+  if (v.actualStart && v.actualEnd && P(v.actualEnd) < P(v.actualStart)) errs.push('O fim real não pode ser anterior ao início real.');
+  ['laborCost', 'thirdCost', 'otherCost', 'techHours'].forEach(k => { if (v[k] != null && v[k] < 0) errs.push('Valores não podem ser negativos.'); });
+  const dur = v.actualStart && v.actualEnd ? hoursBetween(v.actualStart, v.actualEnd) : null;
+  if (dur != null && v.techHours != null && v.techHours > dur + 0.01) errs.push('O tempo de trabalho técnico não pode exceder a duração total da intervenção.');
+  if (errs.length) throw new AppError(errs.join('\n'));
+  if (v.id) {
+    const o = db.workOrders.find(x => x.id === v.id);
+    if (['Encerrada', 'Cancelada'].includes(o.status)) throw new AppError('OS encerrada ou cancelada não pode ser editada.');
+    const { status, items, history, ...rest } = v; Object.assign(o, rest); audit('editar', 'os', o.number); saveDB(); return o.id;
+  }
+  const o = Object.assign({ items: [], history: [], laborCost: null, thirdCost: 0 }, v, { id: uid('OS', 4), number: 'OS-' + String(nextSeq('OSnum')).padStart(4, '0'), status: 'Aberta' });
+  o.history.push({ at: toISODT(new Date()), status: 'Aberta', user: cur() ? cur().id : 'sistema', note: 'OS criada' });
+  db.workOrders.push(o); audit('criar', 'os', o.number, eqName(o.equipId)); saveDB(); return o.id;
+}
+/* estoque ↔ OS: idempotente (consumedQty garante ausência de movimentos duplicados) */
+function syncStock(o) {
+  const consume = ['Em execução', 'Aguardando peças', 'Concluída', 'Encerrada'].includes(o.status);
+  const need_ = {};
+  o.items.forEach(l => { const t = consume ? l.qty : 0; const d = t - (l.consumedQty || 0); if (d > 0) need_[l.itemId] = (need_[l.itemId] || 0) + d; });
+  for (const [iid, q] of Object.entries(need_)) { const it = item(iid); if (!it || it.qty < q) throw new AppError(`Estoque insuficiente de "${it ? it.name : iid}" (necessário ${q}, disponível ${it ? it.qty : 0}).`); }
+  o.items.forEach(l => {
+    const t = consume ? l.qty : 0, d = t - (l.consumedQty || 0); if (!d) return;
+    rawMove(item(l.itemId), d > 0 ? 'saida' : 'estorno', Math.abs(d), d > 0 ? `Consumo na ${o.number}` : `Estorno da ${o.number}`, { ref: o.number, equipId: o.equipId, unitCost: l.unitCost });
+    l.consumedQty = t;
+  });
+}
+function setOSItems(oid, lines) {
+  need('os.update'); const o = db.workOrders.find(x => x.id === oid);
+  if (['Encerrada', 'Cancelada'].includes(o.status)) throw new AppError('OS encerrada ou cancelada não pode ter materiais alterados.');
+  const old = JSON.parse(JSON.stringify(o.items)), keep = new Set(lines.map(l => l.lid));
+  lines.forEach(l => { if (!(l.qty > 0)) throw new AppError('Quantidade deve ser maior que zero.'); });
+  try {
+    old.filter(l => !keep.has(l.lid) && l.consumedQty).forEach(l => rawMove(item(l.itemId), 'estorno', l.consumedQty, `Item removido da ${o.number}`, { ref: o.number, equipId: o.equipId, unitCost: l.unitCost }));
+    o.items = lines.map(l => ({ ...l, consumedQty: (old.find(x => x.lid === l.lid) || {}).consumedQty || 0 }));
+    syncStock(o);
+  } catch (e) { throw e; }
+  audit('materiais', 'os', o.number); saveDB();
+}
+function addOSItem(oid, itemId, qty) {
+  const o = db.workOrders.find(x => x.id === oid), it = item(itemId);
+  if (!it) throw new AppError('Selecione um item.');
+  const lines = o.items.map(l => ({ lid: l.lid, itemId: l.itemId, qty: l.qty, unitCost: l.unitCost }));
+  const ex = lines.find(l => l.itemId === itemId); if (ex) ex.qty += qty; else lines.push({ lid: uid('L', 5), itemId, qty, unitCost: it.price || 0 });
+  setOSItems(oid, lines);
+}
+function removeOSItem(oid, lid) { const o = db.workOrders.find(x => x.id === oid); setOSItems(oid, o.items.filter(l => l.lid !== lid).map(l => ({ lid: l.lid, itemId: l.itemId, qty: l.qty, unitCost: l.unitCost }))); }
+function setOSStatus(oid, status, note, extra = {}) {
+  const o = db.workOrders.find(x => x.id === oid);
+  if (status === 'Cancelada' ? !can('os.write') : !can('os.update')) throw new AppError('Você não tem permissão para esta ação.');
+  if (['Encerrada', 'Aberta', 'Planejada'].includes(status) && !can('os.write')) throw new AppError('Apenas gestores/administradores podem planejar, reabrir ou encerrar OS.');
+  if (!TRANS[o.status].includes(status)) throw new AppError(`Transição inválida: ${o.status} → ${status}.`);
+  if (status === 'Cancelada' && !(note || '').trim()) throw new AppError('Informe a justificativa do cancelamento.');
+  const snapshot = JSON.stringify(o);
+  try {
+    if (status === 'Em execução' && !o.actualStart) o.actualStart = toISODT(new Date());
+    if (status === 'Concluída') {
+      Object.assign(o, extra);
+      if (!o.actualStart || !o.actualEnd) throw new AppError('Informe início e fim reais para concluir a OS.');
+      if (P(o.actualEnd) < P(o.actualStart)) throw new AppError('O fim real não pode ser anterior ao início real.');
+      if (!(o.techHours > 0)) throw new AppError('Informe o tempo de trabalho técnico (horas) para concluir.');
+      if (o.techHours > osDuration(o) + 0.01) throw new AppError('O trabalho técnico não pode exceder a duração total da intervenção.');
+      if (!o.result) throw new AppError('Informe o resultado da intervenção.');
+      if (o.laborCost == null) o.laborCost = round(o.techHours * db.settings.laborRate, 2);
+    }
+    if (status === 'Encerrada') {
+      /* lançamento dos custos na OS no momento do fechamento */
+      Object.assign(o, extra);
+      ['laborCost', 'thirdCost', 'otherCost'].forEach(k => { if (o[k] != null && !(o[k] >= 0)) throw new AppError('Os custos lançados não podem ser negativos.'); });
+      if (o.otherCost > 0 && !(o.otherDesc || '').trim()) throw new AppError('Descreva os outros custos lançados.');
+      if (o.laborCost == null) o.laborCost = round((o.techHours || 0) * db.settings.laborRate, 2);
+      o.thirdCost = o.thirdCost || 0; o.otherCost = o.otherCost || 0;
+      o.closedAt = toISODT(new Date());
+    }
+    if (status === 'Cancelada') o.cancelReason = note;
+    o.status = status;
+    syncStock(o);
+    o.history.push({ at: toISODT(new Date()), status, user: cur().id, note: note || '' });
+    if (status === 'Em execução' && o.failureId) { const f = db.failures.find(x => x.id === o.failureId); if (f && f.status === 'Aberta') f.status = 'Em reparo'; }
+    if (status === 'Concluída') afterConclude(o);
+    audit('status', 'os', o.number, status);
+    if (status === 'Encerrada') audit('custos lançados', 'os', o.number, fR(osCost(o)));
+    saveDB();
+  } catch (e) { const old = JSON.parse(snapshot); for (const k of Object.keys(o)) delete o[k]; Object.assign(o, old); if (e instanceof AppError) throw e; throw e; }
+}
+function afterConclude(o) {
+  if (o.failureId) {
+    const f = db.failures.find(x => x.id === o.failureId);
+    if (f) {
+      f.status = 'Reparada';
+      if (!(f.repairHours > 0)) f.repairHours = o.techHours;
+      if (f.needsStop && !f.stopEnd) { f.stopEnd = o.actualEnd; f.downtime = round(hoursBetween(f.stopStart, f.stopEnd), 2); }
+      if (!f.solution) f.solution = o.result;
+    }
+  }
+  if (o.planId) { const p = db.plans.find(x => x.id === o.planId); if (p) { p.lastDone = toISO(P(o.actualEnd)); p.lastHours = eq(o.equipId).hours; } }
+}
+function reopenCheck() { }
+
+/* ---------- preventivas ---------- */
+function planDue(p) {
+  const e = eq(p.equipId); const today = startOfDay(new Date());
+  const hasOS = db.workOrders.some(o => o.planId === p.id && activeOS(o));
+  if (p.status === 'inativo') return { state: 'inativa', hasOS };
+  if (p.periodType === 'horas') {
+    const base = p.lastHours ?? e.hours ?? 0, nextH = base + p.interval, rem = nextH - (e.hours || 0);
+    return { state: rem <= 0 ? 'vencida' : rem <= Math.max(p.interval * .1, 1) ? 'proxima' : 'ok', nextHours: nextH, remaining: rem, hasOS, label: `${fN(nextH, 0)} h (faltam ${fN(rem, 0)} h)` };
+  }
+  const base = p.lastDone ? P(p.lastDone) : null;
+  if (!base) return { state: 'vencida', due: null, hasOS, label: 'Sem execução registrada' };
+  const due = p.periodType === 'meses' ? addMonths(base, p.interval) : addDays(base, p.interval);
+  const diff = Math.round((startOfDay(due) - today) / 864e5);
+  return { state: diff < 0 ? 'vencida' : diff <= db.settings.alertDays ? 'proxima' : 'ok', due, diff, hasOS, label: fD(due) };
+}
+function savePlan(v) {
+  need('plan.write'); const errs = [];
+  if (!v.equipId) errs.push('Selecione o equipamento.');
+  if (!v.name) errs.push('Informe o nome da atividade.');
+  if (!(v.interval > 0)) errs.push('Periodicidade deve ser maior que zero.');
+  if (!v.periodType) errs.push('Informe a unidade da periodicidade.');
+  if (v.lastDone && P(v.lastDone) > new Date()) errs.push('A última execução não pode estar no futuro.');
+  if (errs.length) throw new AppError(errs.join('\n'));
+  if (v.id) Object.assign(db.plans.find(p => p.id === v.id), v);
+  else { v.status = v.status || 'ativo'; if (v.periodType === 'horas' && v.lastHours == null) v.lastHours = eq(v.equipId).hours; db.plans.push(Object.assign({}, v, { id: uid('PL', 4) })); }
+  audit('salvar', 'plano', v.name); saveDB();
+}
+const PLAN_TEMPLATES = [
+  ['Lubrificação geral', 'Pontos de lubrificação', 'Lubrificar barramentos, fuso e pontos indicados no manual', 30, 'dias', 1, 'Graxa e óleo conforme manual', 'Bloquear energia (LOTO) antes da intervenção'],
+  ['Inspeção de rolamentos', 'Rolamentos do cabeçote', 'Verificar ruído, temperatura e folga axial/radial', 90, 'dias', 2, 'Estetoscópio, termômetro', 'Máquina parada e bloqueada'],
+  ['Verificação de folgas', 'Barramento / carro / contra-ponto', 'Medir folgas e ajustar réguas de guia', 6, 'meses', 3, 'Relógio comparador', 'Máquina parada e bloqueada'],
+  ['Inspeção de correias e transmissões', 'Correias e polias', 'Verificar tensão, desgaste e alinhamento', 60, 'dias', 1, 'Tensiômetro', 'Proteções instaladas após a tarefa'],
+  ['Verificação do sistema elétrico e motor', 'Motor principal e painel', 'Inspecionar contatos, terminais, corrente e aterramento', 6, 'meses', 2, 'Alicate amperímetro, multímetro', 'Profissional habilitado (NR-10)'],
+  ['Inspeção do sistema de refrigeração', 'Bomba e reservatório', 'Verificar vazamentos, filtro e concentração do fluido', 30, 'dias', 1, 'Refratômetro', 'EPI: luvas e óculos'],
+  ['Teste dos dispositivos de segurança', 'Proteções e botão de emergência', 'Testar intertravamentos e parada de emergência', 30, 'dias', 0.5, 'Lista de verificação', 'Testar com área livre'],
+  ['Inspeção de cabeçote, carro e fuso', 'Cabeçote / carro / fuso', 'Verificar jogo, ruídos e desgaste', 6, 'meses', 3, 'Relógio comparador', 'Máquina parada e bloqueada'],
+  ['Vazamentos e níveis de lubrificantes', 'Reservatórios', 'Conferir níveis e vazamentos', 15, 'dias', 0.5, 'Pano, vareta', 'Piso limpo e sinalizado']
+];
+function addPlanTemplates(equipId, idxs) {
+  need('plan.write');
+  idxs.forEach(i => {
+    const t = PLAN_TEMPLATES[i]; if (db.plans.some(p => p.equipId === equipId && p.name === t[0])) return;
+    db.plans.push({ id: uid('PL', 4), equipId, name: t[0], component: t[1], procedure: t[2], interval: t[3], periodType: t[4], lastDone: null, responsible: '', estTime: t[5], tools: t[6], materials: '', safety: t[7], status: 'ativo', example: true });
+  }); audit('modelos', 'plano', equipId); saveDB();
+}
+function osFromPlan(pid) {
+  need('os.write'); const p = db.plans.find(x => x.id === pid);
+  if (db.workOrders.some(o => o.planId === pid && activeOS(o))) throw new AppError('Já existe OS em aberto para este plano.');
+  const due = planDue(p); const start = due.due && due.due > new Date() ? toISODT(new Date(due.due.getTime() + 8 * 36e5)) : toISODT(new Date());
+  return saveOS({ equipId: p.equipId, type: 'Preventiva', planId: pid, description: `${p.name} — ${p.procedure || ''}`.trim(), priority: due.state === 'vencida' ? 'Alta' : 'Média', responsible: p.responsible || '', plannedStart: start, plannedEnd: toISODT(new Date(P(start).getTime() + (p.estTime || 1) * 36e5)), procedures: p.procedure });
+}
+
+/* ---------- estoque ---------- */
+function rawMove(it, type, qty, reason, extra = {}) {
+  const delta = (type === 'entrada' || type === 'estorno') ? qty : -qty;
+  it.qty = round((it.qty || 0) + delta, 3);
+  db.movements.push({ id: uid('MV', 5), at: toISODT(new Date()), itemId: it.id, type, qty, delta, reason, ref: extra.ref || '', equipId: extra.equipId || '', unitCost: extra.unitCost ?? it.price ?? 0, balance: it.qty, user: cur() ? cur().id : 'sistema' });
+}
+function saveItem(v) {
+  need('stock.write'); const errs = [];
+  if (!v.code) errs.push('Informe o código interno.'); if (!v.name) errs.push('Informe o nome.'); if (!v.unit) errs.push('Informe a unidade.');
+  if (db.items.some(i => i.code.toLowerCase() === String(v.code).toLowerCase() && i.id !== v.id)) errs.push('Código interno já existe.');
+  if (v.minQty != null && v.minQty < 0) errs.push('Estoque mínimo inválido.'); if (v.price != null && v.price < 0) errs.push('Preço inválido.');
+  if (errs.length) throw new AppError(errs.join('\n'));
+  if (v.id) {
+    const it = item(v.id); const { qty, ...rest } = v;
+    if (rest.price !== it.price && rest.price != null) it.priceHistory.push({ date: toISO(new Date()), price: rest.price, source: 'Atualização manual' });
+    Object.assign(it, rest, { updated: toISO(new Date()) });
+  } else {
+    const q = v.qty || 0; const it = Object.assign({ priceHistory: [] }, v, { id: uid('IT', 4), qty: 0, updated: toISO(new Date()) });
+    if (v.price != null) it.priceHistory.push({ date: toISO(new Date()), price: v.price, source: 'Cadastro' });
+    db.items.push(it); if (q > 0) rawMove(it, 'entrada', q, 'Estoque inicial');
+  }
+  audit('salvar', 'item', v.code); saveDB();
+}
+function moveStock(itemId, type, qty, reason, equipId) {
+  need(type === 'ajuste' ? 'stock.write' : 'stock.move'); const it = item(itemId);
+  if (!it) throw new AppError('Selecione o item.');
+  if (!(qty >= 0) || (type !== 'ajuste' && !(qty > 0))) throw new AppError('Informe uma quantidade válida.');
+  if (type === 'ajuste') {
+    if (!(reason || '').trim()) throw new AppError('Ajuste de inventário exige justificativa.');
+    const d = qty - it.qty; if (!d) throw new AppError('A quantidade informada é igual ao saldo atual.');
+    rawMove(it, d > 0 ? 'entrada' : 'saida', Math.abs(d), 'Ajuste de inventário: ' + reason, {}); db.movements[db.movements.length - 1].type = 'ajuste';
+  } else {
+    if (type === 'saida' && it.qty < qty) throw new AppError(`Saldo insuficiente (${it.qty} ${it.unit}).`);
+    rawMove(it, type, qty, reason || (type === 'entrada' ? 'Entrada de material' : 'Saída de material'), { equipId });
+  }
+  audit('movimento', 'estoque', it.code, `${type} ${qty}`); saveDB();
+}
+function saveSupplier(v) {
+  need('stock.write'); if (!v.name) throw new AppError('Informe o nome do fornecedor.');
+  if (v.id) Object.assign(db.suppliers.find(s => s.id === v.id), v); else db.suppliers.push(Object.assign({}, v, { id: uid('SP', 3) }));
+  saveDB();
+}
+const stockLow = () => db.items.filter(i => i.active !== false && i.minQty > 0 && i.qty <= i.minQty);
+
+/* ---------- custos ---------- */
+function saveCost(v) {
+  need('cost.write'); const errs = [];
+  if (!v.equipId) errs.push('Selecione o equipamento.'); if (!v.date) errs.push('Informe a data.'); if (!(v.value > 0)) errs.push('Informe um valor maior que zero.');
+  if (errs.length) throw new AppError(errs.join('\n'));
+  if (v.id) Object.assign(db.costs.find(c => c.id === v.id), v); else db.costs.push(Object.assign({}, v, { id: uid('CT', 4) }));
+  audit('salvar', 'custo', v.equipId); saveDB();
+}
+function deleteCost(id) { need('cost.write'); db.costs = db.costs.filter(c => c.id !== id); saveDB(); }
+
+/* ---------- usuários ---------- */
+async function saveUser(v) {
+  need('user.manage');
+  const errs = [];
+  if (!v.name) errs.push('Informe o nome.'); if (!v.username) errs.push('Informe o usuário.'); if (!ROLES[v.role]) errs.push('Informe o perfil.');
+  v.username = String(v.username || '').trim().toLowerCase();
+  if (db.users.some(u => u.username === v.username && u.id !== v.id)) errs.push('Nome de usuário já existe.');
+  if (!v.id && (!v.password || v.password.length < 8)) errs.push('Senha com no mínimo 8 caracteres.');
+  if (v.id && v.password && v.password.length < 8) errs.push('Senha com no mínimo 8 caracteres.');
+  if (v.id === cur().id && (v.role !== 'admin' || v.active === false)) errs.push('Você não pode remover seu próprio acesso de administrador.');
+  if (errs.length) throw new AppError(errs.join('\n'));
+  await cloudQueue.catch(() => {});
+  const result = await apiRequest('/users', { method: 'POST', body: JSON.stringify({ id: v.id || null, name: v.name, username: v.username, role: v.role, active: v.active !== false, password: v.password || null, version: cloudVersion }) });
+  db = result.data; cloudVersion = result.version;
+}
+function saveSettings(v) { need('settings.write'); Object.assign(db.settings, v); audit('configurar', 'sistema'); saveDB(); }
+
+/* =====================================================================
+   CÁLCULOS DE PCM
+   ===================================================================== */
+const mkPeriod = (from, to) => { const f = P(from), t = P(to); if (!f || !t) throw new AppError('Período inválido.'); if (t < f) throw new AppError('A data final não pode ser anterior à inicial.'); return { from: f, to: new Date(t.getTime() + 864e5 - 1) }; };
+const inP = (d, per) => { const x = P(d); return x && x >= per.from && x <= per.to; };
+const mergeIv = iv => { iv.sort((a, b) => a[0] - b[0]); const out = []; for (const x of iv) { const l = out[out.length - 1]; if (l && x[0] <= l[1]) l[1] = Math.max(l[1], x[1]); else out.push([x[0], x[1]]); } return out; };
+const reliability = (lambda, t) => lambda == null ? null : Math.exp(-lambda * t);
+
+function compute(ids, per) {
+  const S = db.settings, now = Date.now();
+  let operated = 0, scheduled = 0, nFail = 0, nRep = 0, repH = 0, repMissing = 0, down = 0, openF = 0, prog = 0, exec = 0, canc = 0, late = 0, pend = 0, prevH = 0, recCount = 0;
+  const reasons = [], failIds = [];
+  ids.forEach(id => {
+    db.records.filter(r => r.equipId === id).forEach(r => {
+      const rs = P(r.start).getTime(), re = P(r.end).getTime() + 864e5, len = re - rs;
+      const ov = Math.max(0, Math.min(re, per.to.getTime()) - Math.max(rs, per.from.getTime()));
+      if (len > 0 && ov > 0) { const k = ov / len; operated += r.operated * k; scheduled += r.scheduled * k; recCount++; }
+    });
+    const fl = db.failures.filter(f => f.equipId === id && f.status !== 'Cancelada' && f.funcional !== false && inP(f.date, per));
+    nFail += fl.length;
+    fl.forEach(f => { failIds.push(f.id); if (f.status === 'Reparada') { if (f.repairHours > 0) { nRep++; repH += f.repairHours; } else repMissing++; } else openF++; });
+    const iv = [];
+    db.failures.filter(f => f.equipId === id && f.status !== 'Cancelada' && f.needsStop && f.stopStart).forEach(f => {
+      const s = P(f.stopStart).getTime(), e = f.stopEnd ? P(f.stopEnd).getTime() : Math.min(now, per.to.getTime());
+      const cs = Math.max(s, per.from.getTime()), ce = Math.min(e, per.to.getTime()); if (ce > cs) iv.push([cs, ce]);
+    });
+    mergeIv(iv).forEach(x => down += (x[1] - x[0]) / 36e5);
+    db.workOrders.filter(o => o.equipId === id && o.type === 'Preventiva' && inP(o.plannedStart, per)).forEach(o => {
+      prog++;
+      if (done(o)) { exec++; prevH += o.techHours || 0; }
+      else if (o.status === 'Cancelada') { canc++; reasons.push({ os: o.number, equip: eqName(o.equipId), reason: o.cancelReason || 'Não informado' }); }
+      else if (P(o.plannedEnd || o.plannedStart) < new Date()) { late++; reasons.push({ os: o.number, equip: eqName(o.equipId), reason: o.notDoneReason || 'Atrasada — motivo não informado' }); }
+      else pend++;
+    });
+  });
+  const flags = [];
+  const mtbf = nFail > 0 && operated > 0 ? operated / nFail : null;
+  const mttr = nRep > 0 ? repH / nRep : null;
+  const availTheo = mtbf != null && mttr != null ? mtbf / (mtbf + mttr) * 100 : null;
+  const availOp = scheduled > 0 ? Math.max(0, (scheduled - Math.min(down, scheduled)) / scheduled * 100) : null;
+  const lambda = nFail > 0 && operated > 0 ? nFail / operated : null;
+  if (!ids.length) flags.push('Nenhum equipamento selecionado.');
+  if (operated <= 0) flags.push('Sem horas operadas registradas no período: MTBF, taxa de falhas e confiabilidade não são calculáveis.');
+  else if (nFail === 0) flags.push('Nenhuma falha funcional observada no período: o MTBF não é calculável (não é zero) — a confiabilidade observada é favorável, mas o intervalo pode ser curto.');
+  if (nFail > 0 && nRep === 0) flags.push('Nenhuma falha reparada com tempo de reparo registrado: MTTR não calculável.');
+  if (repMissing > 0) flags.push(`${repMissing} falha(s) reparada(s) sem tempo de reparo registrado foram desconsideradas no MTTR.`);
+  if (openF > 0) flags.push(`${openF} falha(s) ainda em aberto no período: o MTTR pode estar subestimado.`);
+  if (scheduled <= 0 && operated > 0) flags.push('Sem horas programadas: disponibilidade operacional não calculável.');
+  if (availTheo == null && availOp != null) flags.push('Disponibilidade teórica (MTBF/(MTBF+MTTR)) indisponível; exibida a disponibilidade operacional.');
+  const reliableOK = nFail >= S.minFailures && operated >= S.minHours;
+  if (nFail > 0 && !reliableOK) flags.push(`Dados insuficientes para estimativa confiável (mínimo: ${S.minFailures} falhas e ${S.minHours} h operadas). Interprete MTBF, λ e R(t) como indicativos.`);
+  return { operated, scheduled, nFail, nRep, repH, repMissing, openF, down, mtbf, mttr, availTheo, availOp, avail: availTheo ?? availOp,
+    lambda, lambda1000: lambda != null ? lambda * 1000 : null, reliableOK, prevH,
+    comp: { prog, exec, pend, late, canc, pct: prog > 0 ? exec / prog * 100 : null, reasons }, flags, failIds };
+}
+function monthBuckets(from, to) {
+  const out = []; let d = new Date(P(from).getFullYear(), P(from).getMonth(), 1); const end = P(to);
+  while (d <= end && out.length < 36) {
+    const s = new Date(d), e = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    out.push({ label: `${MONTHS[s.getMonth()]}/${String(s.getFullYear()).slice(2)}`, from: s < P(from) ? P(from) : s, to: e > end ? end : e }); d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+  } return out;
+}
+function monthly(ids, from, to) {
+  return monthBuckets(from, to).map(b => { const per = mkPeriod(toISO(b.from), toISO(b.to)); const c = compute(ids, per); return { label: b.label, per, c, costs: costRows(ids, per) }; });
+}
+
+/* ---------- custos consolidados (fonte única para tela, relatório e Excel) ---------- */
+function costRows(ids, per) {
+  const rows = [], S = db.settings; const push = r => { if (ids.includes(r.equipId) && inP(r.date, per) && r.value > 0) rows.push(r); };
+  db.workOrders.filter(o => o.status !== 'Cancelada' && ids.includes(o.equipId)).forEach(o => {
+    const date = (costsPosted(o) && o.closedAt) || o.actualEnd || o.plannedEnd || o.plannedStart, kind = costsPosted(o) ? 'real' : 'estimado', base = { date, equipId: o.equipId, type: o.type, kind, source: o.number };
+    push({ ...base, category: 'Peças e materiais', value: osParts(o) }); push({ ...base, category: 'Mão de obra', value: o.laborCost || 0 }); push({ ...base, category: 'Serviços terceirizados', value: o.thirdCost || 0 }); push({ ...base, category: 'Outros', value: o.otherCost || 0, desc: o.otherDesc });
+  });
+  db.failures.filter(f => f.status !== 'Cancelada' && ids.includes(f.equipId)).forEach(f => {
+    const hasOS = db.workOrders.some(o => o.failureId === f.id && o.status !== 'Cancelada');
+    if (!hasOS) { if (f.realCost > 0) push({ date: f.date, equipId: f.equipId, type: 'Corretiva', kind: 'real', category: 'Outros', value: f.realCost, source: f.number }); else if (f.estCost > 0) push({ date: f.date, equipId: f.equipId, type: 'Corretiva', kind: 'estimado', category: 'Outros', value: f.estCost, source: f.number }); }
+    if (S.downtimeCostPerHour > 0 && f.needsStop && f.stopStart) { const h = hoursBetween(f.stopStart, f.stopEnd || toISODT(new Date())); push({ date: f.stopStart, equipId: f.equipId, type: 'Corretiva', kind: 'estimado', category: 'Indisponibilidade', value: h * S.downtimeCostPerHour, source: f.number }); }
+  });
+  db.costs.filter(c => ids.includes(c.equipId)).forEach(c => push({ date: c.date, equipId: c.equipId, type: c.type || 'Outros', kind: c.kind, category: c.category, value: c.value, source: 'Lançamento manual (legado)', id: c.id, desc: c.description }));
+  return rows.sort((a, b) => P(a.date) - P(b.date));
+}
+function costSummary(rows) {
+  const real = sum(rows.filter(r => r.kind === 'real'), r => r.value), est = sum(rows.filter(r => r.kind === 'estimado'), r => r.value);
+  const by = k => rows.reduce((m, r) => { m[r[k]] = (m[r[k]] || 0) + r.value; return m; }, {});
+  const realRows = rows.filter(r => r.kind === 'real');
+  const prev = sum(realRows.filter(r => r.type === 'Preventiva'), r => r.value), corr = sum(realRows.filter(r => r.type === 'Corretiva'), r => r.value);
+  return { real, est, total: real + est, byCat: by('category'), byType: by('type'), byEquip: by('equipId'), prev, corr, prevPct: prev + corr > 0 ? prev / (prev + corr) * 100 : null, parts: sum(rows.filter(r => r.category === 'Peças e materiais'), r => r.value) };
+}
+function failureCost(f) {
+  const os = db.workOrders.filter(o => o.failureId === f.id && o.status !== 'Cancelada');
+  return os.length ? sum(os, osCost) : (f.realCost ?? f.estCost ?? 0);
+}
+
+/* ---------- Pareto, curva da banheira, alertas ---------- */
+function pareto(ids, per, groupBy, metric) {
+  const m = {};
+  db.failures.filter(f => ids.includes(f.equipId) && f.status !== 'Cancelada' && inP(f.date, per)).forEach(f => {
+    const k = groupBy === 'equip' ? eqName(f.equipId) : (groupBy === 'cause' ? f.causeClass : (f.component || 'Não informado')) || 'Não informado';
+    const v = metric === 'count' ? 1 : metric === 'downtime' ? (f.needsStop && f.stopStart ? hoursBetween(f.stopStart, f.stopEnd || toISODT(new Date())) || 0 : 0) : failureCost(f);
+    m[k] = (m[k] || 0) + v;
+  });
+  const arr = Object.entries(m).sort((a, b) => b[1] - a[1]), tot = sum(arr, a => a[1]); let acc = 0;
+  return arr.map(([k, v]) => { acc += v; return { k, v, pct: tot ? v / tot * 100 : 0, cum: tot ? acc / tot * 100 : 0 }; });
+}
+function bathtub(ids) {
+  const B = {}; let totalF = 0;
+  ids.forEach(id => {
+    const e = eq(id), ref = P(e.instDate || e.acqDate); if (!ref) return;
+    const bucket = d => Math.floor(Math.max(0, (P(d) - ref) / 864e5 / 182.5));
+    db.records.filter(r => r.equipId === id).forEach(r => { const b = bucket(new Date((P(r.start).getTime() + P(r.end).getTime()) / 2)); B[b] = B[b] || { h: 0, f: 0 }; B[b].h += r.operated; });
+    db.failures.filter(f => f.equipId === id && f.status !== 'Cancelada' && f.funcional !== false).forEach(f => { const b = bucket(f.date); B[b] = B[b] || { h: 0, f: 0 }; B[b].f++; totalF++; });
+  });
+  const pts = Object.entries(B).map(([b, v]) => ({ b: +b, rate: v.h > 0 ? v.f / v.h * 1000 : null, h: v.h, f: v.f })).filter(p => p.rate != null).sort((a, b) => a.b - b.b);
+  return { pts, enough: totalF >= 12 && pts.length >= 3, totalF };
+}
+function alerts() {
+  const out = [];
+  db.plans.filter(p => p.status !== 'inativo' && !eq(p.equipId).archived).forEach(p => { const d = planDue(p); if (d.state === 'vencida') out.push({ level: 'red', text: `Preventiva vencida: ${p.name} — ${eq(p.equipId).code}`, href: '#/preventivas' }); else if (d.state === 'proxima') out.push({ level: 'yellow', text: `Preventiva próxima: ${p.name} — ${eq(p.equipId).code} (${d.label})`, href: '#/preventivas' }); });
+  stockLow().forEach(i => out.push({ level: i.qty <= 0 ? 'red' : 'yellow', text: `Estoque mínimo: ${i.name} (${i.qty} ${i.unit})`, href: '#/estoque' }));
+  db.failures.filter(f => (f.status === 'Aberta' || f.status === 'Em reparo') && f.criticality === 'Crítica').forEach(f => out.push({ level: 'red', text: `Falha crítica ativa: ${f.number} — ${eq(f.equipId).code}`, href: '#/falhas' }));
+  db.workOrders.filter(o => activeOS(o) && P(o.plannedEnd || o.plannedStart) < new Date() && o.type !== 'Preventiva').forEach(o => out.push({ level: 'yellow', text: `OS atrasada: ${o.number} — ${eqName(o.equipId)}`, href: '#/os/' + o.id }));
+  return out;
+}
+
+/* ---------- relatório (fonte única para tela, PDF e Excel) ---------- */
+function buildReport(equipId, from, to) {
+  const ids = equipId === 'all' ? db.equipment.filter(e => !e.archived).map(e => e.id) : [equipId];
+  if (!ids.length) throw new AppError('Nenhum equipamento disponível.');
+  const per = mkPeriod(from, to), S = db.settings;
+  const lenMs = per.to - per.from + 1, prevPer = { from: new Date(per.from.getTime() - lenMs), to: new Date(per.from.getTime() - 1) };
+  const c = compute(ids, per), cp = compute(ids, prevPer);
+  const fails = db.failures.filter(f => ids.includes(f.equipId) && f.status !== 'Cancelada' && inP(f.date, per)).sort((a, b) => P(a.date) - P(b.date));
+  const oss = db.workOrders.filter(o => ids.includes(o.equipId) && o.status !== 'Cancelada' && (inP(o.plannedStart, per) || (o.actualStart && inP(o.actualStart, per)))).sort((a, b) => P(a.plannedStart) - P(b.plannedStart));
+  const rows = costRows(ids, per), cs = costSummary(rows);
+  const plans = db.plans.filter(p => ids.includes(p.equipId) && p.status !== 'inativo').map(p => ({ p, d: planDue(p) }));
+  const cnt = {}; fails.forEach(f => { const k = f.component || 'Não informado'; cnt[k] = (cnt[k] || 0) + 1; });
+  const recurring = Object.entries(cnt).filter(([k, v]) => v >= 2 && k !== 'Não informado').sort((a, b) => b[1] - a[1]);
+  const off = [];
+  if (c.avail != null && c.avail < S.goalAvail) off.push(`Disponibilidade ${fP(c.avail)} abaixo da meta de ${fP(S.goalAvail, 0)}.`);
+  if (c.mtbf != null && c.mtbf < S.goalMtbf) off.push(`MTBF ${fN(c.mtbf)} h abaixo da meta de ${fN(S.goalMtbf, 0)} h.`);
+  if (c.mttr != null && c.mttr > S.goalMttr) off.push(`MTTR ${fN(c.mttr)} h acima da meta de ${fN(S.goalMttr, 0)} h.`);
+  if (c.comp.pct != null && c.comp.pct < S.goalCompliance) off.push(`Cumprimento preventivo ${fP(c.comp.pct)} abaixo da meta de ${fP(S.goalCompliance, 0)}.`);
+  const var_ = (a, b, inv) => a == null || b == null || b === 0 ? null : (a - b) / b * 100;
+  const recs = [];
+  if (recurring.length) recs.push(`Investigar a causa raiz de falhas recorrentes em: ${recurring.map(([k, v]) => `${k} (${v}×)`).join(', ')}.`);
+  if (c.mtbf != null && c.mtbf < S.goalMtbf) recs.push('MTBF abaixo da meta: avaliar a frequência de falhas, desgaste de componentes e eficácia do plano preventivo.');
+  if (c.mttr != null && c.mttr > S.goalMttr) recs.push('MTTR acima da meta: investigar dificuldades de diagnóstico, disponibilidade de peças, procedimentos e capacitação.');
+  if (c.comp.pct != null && c.comp.pct < S.goalCompliance) recs.push('Cumprimento preventivo baixo: avaliar atrasos, recursos disponíveis e prioridades; revisar planos conforme o manual do fabricante.');
+  if (c.comp.late > 0) recs.push(`Há ${c.comp.late} preventiva(s) atrasada(s) no período: reprogramar e registrar os motivos.`);
+  const late = plans.filter(x => x.d.state === 'vencida'); if (late.length) recs.push(`Planos vencidos hoje: ${late.map(x => x.p.name + ' (' + eq(x.p.equipId).code + ')').slice(0, 5).join('; ')}.`);
+  const crit = pareto(ids, per, 'component', 'count')[0]; if (crit && crit.v >= 2) recs.push(`Verificar peças críticas e estoque do componente mais frequente: ${crit.k}.`);
+  if (cp.mtbf != null && c.mtbf != null && c.mtbf < cp.mtbf * 0.8) recs.push('MTBF em deterioração em relação ao período anterior comparável: acompanhar de perto.');
+  if (!recs.length) recs.push('Os dados do período não indicam desvios relevantes. Manter o acompanhamento dos indicadores e a execução do plano preventivo.');
+  const facts = [];
+  const cond = c.openF > 0 || ids.some(id => equipStatus(eq(id)) !== 'operacional') ? 'há ocorrências em aberto ou equipamentos fora de operação' : 'os equipamentos encontram-se operacionais';
+  const conclusion = `No período de ${fD(from)} a ${fD(to)}, ${cond}. ` +
+    (c.nFail === 0 ? 'Não foram registradas falhas funcionais; ' : `Foram registradas ${c.nFail} falha(s) funcional(is), com MTBF ${c.mtbf != null ? fN(c.mtbf) + ' h' : 'não calculável'} e MTTR ${c.mttr != null ? fN(c.mttr) + ' h' : 'não calculável'}. `) +
+    `Disponibilidade ${c.avail != null ? fP(c.avail) : 'não calculável'}${c.availTheo == null && c.avail != null ? ' (operacional)' : ''}; cumprimento preventivo ${c.comp.pct != null ? fP(c.comp.pct) : 'não calculável'}; custo de manutenção real de ${fR(cs.real)}${cs.est > 0 ? ' (+ ' + fR(cs.est) + ' estimados)' : ''}. ` +
+    (c.reliableOK ? '' : 'Ressalva: volume de dados insuficiente para estimativas estatisticamente robustas. ');
+  const months = monthly(ids, toISO(per.from), toISO(per.to));
+  return { ids, per, from, to, equips: ids.map(eq), c, cp, prevPer, fails, oss, rows, cs, plans, recurring, off, recs, conclusion, months, settings: S,
+    responsible: cur() ? cur().name : '', generatedAt: toISODT(new Date()), variation: { mtbf: var_(c.mtbf, cp.mtbf), mttr: var_(c.mttr, cp.mttr), avail: var_(c.avail, cp.avail), fails: var_(c.nFail, cp.nFail) } };
+}
+
+/* ---------- testes automatizados dos cálculos (executáveis no navegador e em Node) ---------- */
+function runSelfTests() {
+  const res = []; const t = (n, ok, info = '') => res.push({ n, ok: !!ok, info });
+  const near = (a, b, e = 1e-6) => a != null && Math.abs(a - b) < e;
+  t('SHA-256("abc")', sha256('abc') === 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+  t('R(t)=e^(-λt) com λ=0,001 e t=100', near(reliability(0.001, 100), Math.exp(-0.1)));
+  const bk = db, tmp = { seq: {}, users: [], equipment: [{ id: 'T1', code: 'T', name: 'T', docs: [] }], records: [{ id: 'r', equipId: 'T1', start: '2026-01-01', end: '2026-01-31', scheduled: 300, operated: 270 }],
+    failures: [], workOrders: [], plans: [], items: [], movements: [], suppliers: [], costs: [], audit: [], settings: { ...DEFAULT_SETTINGS } };
+  const mkF = (d, rep, stopS, stopE) => ({ id: 'f' + d, equipId: 'T1', status: 'Reparada', funcional: true, date: d, repairHours: rep, needsStop: !!stopS, stopStart: stopS, stopEnd: stopE });
+  tmp.failures = [mkF('2026-01-05T08:00', 4, '2026-01-05T08:00', '2026-01-05T14:00'), mkF('2026-01-15T08:00', 6, '2026-01-15T08:00', '2026-01-15T18:00'), mkF('2026-01-20T08:00', 5, '2026-01-20T10:00', '2026-01-20T16:00'), mkF('2026-01-20T09:00', 2, '2026-01-20T12:00', '2026-01-20T20:00')];
+  db = tmp;
+  try {
+    const c = compute(['T1'], mkPeriod('2026-01-01', '2026-01-31'));
+    t('MTBF = horas operadas / falhas (270/4 = 67,5)', near(c.mtbf, 67.5));
+    t('MTTR = horas de reparo / falhas reparadas ((4+6+5+2)/4 = 4,25)', near(c.mttr, 4.25));
+    t('Disponibilidade = MTBF/(MTBF+MTTR)', near(c.availTheo, 67.5 / (67.5 + 4.25) * 100));
+    t('λ = falhas / horas operadas', near(c.lambda, 4 / 270));
+    t('Paradas sobrepostas não são somadas (6+10+ união 10:00–20:00 = 10 → 26 h)', near(c.down, 26), 'obtido ' + c.down);
+    t('Disponibilidade operacional = (300−26)/300', near(c.availOp, (300 - 26) / 300 * 100));
+    t('Prorrata por período parcial (metade de janeiro ≈ metade das horas)', (() => { const x = compute(['T1'], mkPeriod('2026-01-01', '2026-01-15')); return near(x.operated, 270 * 15 / 31, 1e-6); })());
+    tmp.failures = []; const z = compute(['T1'], mkPeriod('2026-01-01', '2026-01-31'));
+    t('Sem falhas: MTBF não é zero (não calculável)', z.mtbf === null && z.flags.some(f => f.includes('não é calculável')));
+    tmp.failures = [mkF('2026-01-05T08:00', null, '2026-01-05T08:00', '2026-01-05T14:00')]; const y = compute(['T1'], mkPeriod('2026-01-01', '2026-01-31'));
+    t('Falha reparada sem tempo de reparo não entra no MTTR', y.mttr === null && y.repMissing === 1);
+    tmp.workOrders = [{ id: 'o1', number: 'OS-1', equipId: 'T1', type: 'Preventiva', status: 'Concluída', plannedStart: '2026-01-10T08:00', techHours: 1, items: [] }, { id: 'o2', number: 'OS-2', equipId: 'T1', type: 'Preventiva', status: 'Planejada', plannedStart: '2026-01-12T08:00', plannedEnd: '2026-01-12T10:00', items: [] }, { id: 'o3', number: 'OS-3', equipId: 'T1', type: 'Preventiva', status: 'Cancelada', cancelReason: 'x', plannedStart: '2026-01-20T08:00', items: [] }, { id: 'o4', number: 'OS-4', equipId: 'T1', type: 'Preventiva', status: 'Aberta', plannedStart: '2026-01-25T08:00', items: [] }];
+    const k = compute(['T1'], mkPeriod('2026-01-01', '2026-01-31'));
+    t('Cumprimento preventivo = executadas concluídas / programadas (1/4 = 25%)', near(k.comp.pct, 25) && k.comp.prog === 4 && k.comp.exec === 1);
+    tmp.workOrders = [{ id: 'o1', number: 'OS-1', equipId: 'T1', type: 'Corretiva', status: 'Concluída', plannedStart: '2026-01-10T08:00', actualEnd: '2026-01-10T12:00', laborCost: 100, thirdCost: 50, items: [{ qty: 2, unitCost: 10 }] }];
+    const cr = costRows(['T1'], mkPeriod('2026-01-01', '2026-01-31'));
+    t('Custo da OS = peças + mão de obra + terceiros (170)', near(sum(cr, r => r.value), 170));
+    t('OS apenas Concluída: custo é estimado (ainda não lançado)', cr.length > 0 && cr.every(r => r.kind === 'estimado'));
+    tmp.workOrders[0].status = 'Encerrada'; tmp.workOrders[0].otherCost = 30; tmp.workOrders[0].closedAt = '2026-01-10T13:00';
+    const ce = costRows(['T1'], mkPeriod('2026-01-01', '2026-01-31'));
+    t('OS Encerrada: custos lançados como reais, incluindo outros custos (200)', ce.every(r => r.kind === 'real') && near(sum(ce, r => r.value), 200));
+    // estoque idempotente
+    const it = { id: 'I1', code: 'I', name: 'Item', qty: 10, unit: 'un', price: 5, priceHistory: [] }; tmp.items = [it];
+    const o = { id: 'o9', number: 'OS-9', equipId: 'T1', status: 'Em execução', items: [{ lid: 'a', itemId: 'I1', qty: 3, unitCost: 5, consumedQty: 0 }] };
+    syncStock(o); syncStock(o);
+    t('Estoque: sincronização repetida não duplica baixa (10−3 = 7)', it.qty === 7 && tmp.movements.length === 1);
+    o.status = 'Cancelada'; syncStock(o);
+    t('Estoque: cancelamento estorna o consumo (volta a 10)', it.qty === 10 && tmp.movements.length === 2);
+  } catch (e) { t('Exceção durante os testes', false, e.message); }
+  db = bk; return res;
+}
+
+
+</script>
+<script>
+/* =====================================================================
+   PCM Tornos — INTERFACE (parte 1): componentes, layout, painel,
+   equipamentos, indicadores, falhas
+   ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const UI = { tab: {}, f: {}, eqTab: 'geral' };
+const ACT = {};
+const COLORS = { pri: '#1f4e79', pri2: '#2b6cb0', acc: '#e8830c', ok: '#2e9e5b', warn: '#e0a800', bad: '#d64545', gray: '#8795a5', teal: '#2a9d8f' };
+
+/* ---------- feedback ---------- */
+function toast(msg, kind = 'ok') { const t = document.createElement('div'); t.className = 'toast ' + kind; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), kind === 'err' ? 6000 : 2800); }
+function run(fn) { try { const r = fn(); if (r && r.catch) r.catch(handleErr); } catch (e) { handleErr(e); } }
+function handleErr(e) { if (e instanceof AppError) toast(e.message, 'err'); else { console.error(e); toast('Erro inesperado: ' + e.message, 'err'); } }
+const refresh = () => renderRoute();
+
+/* ---------- modal e formulários ---------- */
+function modal(title, body, wide) {
+  closeModal(); const d = document.createElement('div'); d.className = 'mback';
+  d.innerHTML = `<div class="modal ${wide ? 'wide' : ''}"><div class="mhead"><h3>${E(title)}</h3><button class="x" data-act="closeModal" type="button">×</button></div><div class="mbody">${body}</div></div>`;
+  document.body.appendChild(d); return d;
+}
+function closeModal() { $$('.mback').forEach(x => x.remove()); }
+ACT.closeModal = closeModal;
+const opts = o => (typeof o === 'function' ? o() : o || []).map(x => typeof x === 'string' ? { v: x, l: x } : x);
+const equipOpts = (all) => db.equipment.filter(e => all || !e.archived).map(e => ({ v: e.id, l: `${e.code} — ${e.name}` }));
+const userOpts = () => db.users.filter(u => u.active).map(u => ({ v: u.id, l: u.name }));
+function fieldHTML(f, v) {
+  const val = v[f.n] ?? f.def ?? '', cls = f.full ? 'full' : '';
+  let inp;
+  switch (f.t) {
+    case 'textarea': inp = `<textarea name="${f.n}" rows="${f.rows || 3}">${E(val)}</textarea>`; break;
+    case 'select': inp = `<select name="${f.n}" ${f.ro ? 'disabled' : ''}>${f.blank !== false ? '<option value=""></option>' : ''}${opts(f.opts).map(o => `<option value="${E(o.v)}" ${String(o.v) === String(val) ? 'selected' : ''}>${E(o.l)}</option>`).join('')}</select>`; break;
+    case 'checkbox': return `<label class="chk ${cls}"><input type="checkbox" name="${f.n}" ${val === true || val === 'true' ? 'checked' : ''}> ${E(f.l)}</label>`;
+    case 'checks': return `<div class="full"><span style="font-size:.78rem;color:var(--mut);font-weight:600">${E(f.l)}</span><div class="checks">${opts(f.opts).map(o => `<label><input type="checkbox" data-checks="${f.n}" value="${E(o.v)}"> ${E(o.l)}</label>`).join('')}</div></div>`;
+    case 'file': inp = `<input type="file" name="${f.n}" ${f.multiple ? 'multiple' : ''} ${f.accept ? `accept="${f.accept}"` : ''}>`; break;
+    default: inp = `<input type="${f.t || 'text'}" name="${f.n}" value="${E(String(val).length > 16 && f.t === 'date' ? String(val).slice(0, 10) : val)}" ${f.step ? `step="${f.step}"` : ''} ${f.min != null ? `min="${f.min}"` : ''} ${f.ro ? 'readonly' : ''} ${f.t === 'password' ? 'autocomplete="new-password"' : ''}>`;
+  }
+  return `<label class="${cls}"><span>${E(f.l)}${f.req ? ' *' : ''}</span>${inp}${f.hint ? `<small>${E(f.hint)}</small>` : ''}</label>`;
+}
+const readFile = (file) => new Promise((res, rej) => {
+  if (file.size > 450 * 1024) return rej(new AppError(`O arquivo "${file.name}" excede 450 KB (limite do protótipo com armazenamento local).`));
+  const r = new FileReader(); r.onload = () => res({ name: file.name, type: file.type, size: file.size, data: r.result }); r.onerror = () => rej(new AppError('Falha ao ler o arquivo.')); r.readAsDataURL(file);
+});
+async function collect(fields, form) {
+  const out = {}, errs = [];
+  for (const f of fields) {
+    if (f.t === 'checks') { out[f.n] = $$(`[data-checks="${f.n}"]`, form).filter(x => x.checked).map(x => x.value); continue; }
+    const el = form.elements[f.n]; if (!el) continue;
+    if (f.t === 'checkbox') out[f.n] = el.checked;
+    else if (f.t === 'number') out[f.n] = el.value === '' ? null : Number(el.value);
+    else if (f.t === 'file') out[f.n] = await Promise.all([...el.files].map(readFile));
+    else out[f.n] = el.value.trim();
+    if (f.req && (out[f.n] === '' || out[f.n] == null || (Array.isArray(out[f.n]) && !out[f.n].length))) errs.push(`O campo "${f.l}" é obrigatório.`);
+  }
+  if (errs.length) throw new AppError(errs.join('\n'));
+  return out;
+}
+function ask(title, fields, vals, onSave, o = {}) {
+  const m = modal(title, `<form class="fgrid">${fields.map(f => fieldHTML(f, vals || {})).join('')}</form><div class="ferr" hidden></div><div class="mfoot"><button class="btn ghost" data-act="closeModal" type="button">Cancelar</button><button class="btn pri" id="msave" type="button">${o.submit || 'Salvar'}</button></div>`, o.wide !== false);
+  const form = $('form', m), err = $('.ferr', m);
+  const go = async () => { try { const v = await collect(fields, form); await onSave(v); closeModal(); refresh(); } catch (e) { err.hidden = false; err.textContent = e instanceof AppError ? e.message : 'Erro inesperado: ' + e.message; if (!(e instanceof AppError)) console.error(e); } };
+  $('#msave', m).onclick = go; form.onsubmit = ev => { ev.preventDefault(); go(); };
+}
+function confirmBox(msg, onYes, label = 'Confirmar') {
+  const m = modal('Confirmação', `<p style="white-space:pre-line">${E(msg)}</p><div class="mfoot"><button class="btn ghost" data-act="closeModal">Cancelar</button><button class="btn pri" id="myes">${label}</button></div>`);
+  $('#myes', m).onclick = () => { try { onYes(); closeModal(); refresh(); } catch (e) { closeModal(); handleErr(e); } };
+}
+
+/* ---------- gráficos ---------- */
+const CH = {};
+function mkChart(id, cfg) {
+  const c = document.getElementById(id); if (!c) return;
+  if (CH[id]) { CH[id].destroy(); delete CH[id]; }
+  if (typeof Chart === 'undefined') { c.parentNode.innerHTML = '<div class="empty">Biblioteca de gráficos indisponível (sem conexão com a internet).</div>'; return; }
+  cfg.options = Object.assign({ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }, cfg.options || {});
+  CH[id] = new Chart(c, cfg); return CH[id];
+}
+const chartBox = (id, h) => `<div class="chartbox ${h || ''}"><canvas id="${id}"></canvas></div>`;
+const PAL = [COLORS.pri2, COLORS.acc, COLORS.ok, COLORS.bad, COLORS.teal, COLORS.warn, COLORS.gray, '#7b5ea7'];
+
+/* ---------- tabelas ---------- */
+const TB = {};
+function table(id, cfg) {
+  const old = TB[id]; TB[id] = Object.assign({ pageSize: 10 }, cfg, { st: old ? old.st : { q: '', sort: null, dir: 1, page: 1, f: {}, d1: '', d2: '' } });
+  const t = TB[id];
+  const fl = (cfg.filters || []).map(f => `<select data-tf="${id}" data-k="${f.k}"><option value="">${E(f.l)}: todos</option>${opts(f.o).map(o => `<option value="${E(o.v)}" ${t.st.f[f.k] === String(o.v) ? 'selected' : ''}>${E(o.l)}</option>`).join('')}</select>`).join('');
+  const dt = cfg.dates ? `<input type="date" data-td="${id}" data-k="d1" value="${t.st.d1}" title="De"><input type="date" data-td="${id}" data-k="d2" value="${t.st.d2}" title="Até">` : '';
+  return `<div class="tbl" id="tb-${id}" data-id="${id}"><div class="tbar"><input type="search" placeholder="Pesquisar…" data-tq="${id}" value="${E(t.st.q)}">${fl}${dt}</div><div class="tbody"></div></div>`;
+}
+function tbRender(id) {
+  const el = $(`#tb-${id} .tbody`), t = TB[id]; if (!el || !t) return; const st = t.st;
+  let rows = t.rows().slice();
+  (t.filters || []).forEach(f => { const v = st.f[f.k]; if (v) rows = rows.filter(r => String(f.get(r)) === v); });
+  if (t.dates) { if (st.d1) rows = rows.filter(r => { const d = P(t.dates(r)); return d && d >= P(st.d1); }); if (st.d2) rows = rows.filter(r => { const d = P(t.dates(r)); return d && d <= new Date(P(st.d2).getTime() + 864e5 - 1); }); }
+  if (st.q) { const q = st.q.toLowerCase(); rows = rows.filter(r => t.cols.some(c => String(c.v ? c.v(r) : '').toLowerCase().includes(q))); }
+  if (st.sort != null) { const c = t.cols[st.sort]; rows.sort((a, b) => { const x = c.v(a), y = c.v(b); if (x == null) return 1; if (y == null) return -1; return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR', { numeric: true })) * st.dir; }); }
+  const pages = Math.max(1, Math.ceil(rows.length / t.pageSize)); st.page = Math.min(st.page, pages);
+  const slice = rows.slice((st.page - 1) * t.pageSize, st.page * t.pageSize);
+  el.innerHTML = rows.length ? `<div class="scroll"><table><thead><tr>${t.cols.map((c, i) => `<th class="${c.num ? 'num' : ''}" ${c.v ? `data-ts="${id}|${i}"` : ''}>${E(c.l)}${st.sort === i ? (st.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>${slice.map(r => `<tr>${t.cols.map(c => `<td class="${c.num ? 'num' : ''}">${c.r ? c.r(r) : E(c.v(r))}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="pager"><span>${rows.length} registro(s)</span><button class="btn sm" data-tp="${id}|-1" ${st.page <= 1 ? 'disabled' : ''}>‹</button><span>${st.page}/${pages}</span><button class="btn sm" data-tp="${id}|1" ${st.page >= pages ? 'disabled' : ''}>›</button></div>` : `<div class="empty">${t.empty || 'Nenhum registro encontrado.'}</div>`;
+}
+const tbAll = () => $$('.tbl').forEach(e => tbRender(e.dataset.id));
+document.addEventListener('input', e => { const id = e.target.dataset.tq; if (id) { TB[id].st.q = e.target.value; TB[id].st.page = 1; tbRender(id); } if (e.target.dataset.td) { const id = e.target.dataset.td; TB[id].st[e.target.dataset.k] = e.target.value; TB[id].st.page = 1; tbRender(id); } });
+document.addEventListener('change', e => { const id = e.target.dataset.tf; if (id) { TB[id].st.f[e.target.dataset.k] = e.target.value; TB[id].st.page = 1; tbRender(id); } });
+document.addEventListener('click', e => {
+  const th = e.target.closest('[data-ts]'); if (th) { const [id, i] = th.dataset.ts.split('|'), st = TB[id].st; if (st.sort == i) st.dir *= -1; else { st.sort = +i; st.dir = 1; } tbRender(id); return; }
+  const pg = e.target.closest('[data-tp]'); if (pg) { const [id, d] = pg.dataset.tp.split('|'); TB[id].st.page += +d; tbRender(id); return; }
+  const a = e.target.closest('[data-act]'); if (a && ACT[a.dataset.act]) { e.preventDefault(); run(() => ACT[a.dataset.act](a.dataset, a)); }
+  if (!e.target.closest('.bell')) { const dd = $('#dd'); if (dd) dd.hidden = true; }
+});
+
+/* ---------- pequenos helpers de UI ---------- */
+const badge = (t, c) => `<span class="badge ${c}">${E(t)}</span>`;
+const statusBadge = e => { const s = equipStatus(e); return badge(STATUS_LABEL[s], { operacional: 'green', manutencao: 'yellow', indisponivel: 'red' }[s]); };
+const critBadge = c => badge(c, { 'Baixa': 'green', 'Média': 'yellow', 'Alta': 'orange', 'Crítica': 'red' }[c] || 'gray');
+const osBadge = s => badge(s, { 'Aberta': 'blue', 'Planejada': 'blue', 'Em execução': 'yellow', 'Aguardando peças': 'orange', 'Concluída': 'green', 'Encerrada': 'gray', 'Cancelada': 'gray' }[s]);
+const fBadge = s => badge(s, { 'Aberta': 'red', 'Em reparo': 'yellow', 'Reparada': 'green', 'Cancelada': 'gray' }[s]);
+const planBadge = d => ({ vencida: badge('Vencida', 'red'), proxima: badge('Próxima', 'yellow'), ok: badge('Em dia', 'green'), inativa: badge('Inativa', 'gray') }[d.state]);
+const kpi = (l, v, s, c) => `<div class="kpi ${c || ''}"><div class="l">${E(l)}</div><div class="v">${v}</div><div class="s">${s || ''}</div></div>`;
+const btn = (act, label, data = '', cls = 'btn sm') => `<button class="${cls}" data-act="${act}" ${data}>${label}</button>`;
+const notes = flags => flags.map(f => `<div class="note">⚠ ${E(f)}</div>`).join('');
+const activeIds = () => db.equipment.filter(e => !e.archived).map(e => e.id);
+const goalColor = (v, goal, inv) => v == null ? 'blue' : !inv ? (v >= goal ? 'green' : v >= goal * .93 ? 'yellow' : 'red') : (v <= goal ? 'green' : v <= goal * 1.5 ? 'yellow' : 'red');
+function periodDefaults(k) { if (!UI.f[k]) { const t = new Date(); UI.f[k] = { equip: 'all', from: toISO(new Date(t.getFullYear(), t.getMonth() - 5, 1)), to: toISO(t) }; } return UI.f[k]; }
+function filterBar(k, extra = '') {
+  const f = periodDefaults(k);
+  return `<div class="card noprint"><div class="row"><label>Equipamento <select id="fb-eq"><option value="all">Todos os tornos</option>${equipOpts(true).map(o => `<option value="${o.v}" ${f.equip === o.v ? 'selected' : ''}>${E(o.l)}</option>`).join('')}</select></label><label>De <input type="date" id="fb-from" value="${f.from}"></label><label>Até <input type="date" id="fb-to" value="${f.to}"></label><button class="btn pri" data-act="applyFilter" data-k="${k}">Aplicar</button>${extra}</div></div>`;
+}
+ACT.applyFilter = d => { const f = periodDefaults(d.k); f.equip = $('#fb-eq').value; f.from = $('#fb-from').value; f.to = $('#fb-to').value; mkPeriod(f.from, f.to); refresh(); };
+const idsOf = f => f.equip === 'all' ? activeIds() : [f.equip];
+const setView = h => { $('#view').innerHTML = h; };
+
+/* ---------- layout ---------- */
+const NAV = [['dashboard', 'Painel', '📊'], ['equipamentos', 'Equipamentos', '🏭'], ['indicadores', 'Indicadores', '📈', 'indicator.view'], ['falhas', 'Defeitos e falhas', '⚠️'], ['os', 'Ordens de serviço', '🧾', 'os.view'], ['qr', 'QR Codes / Acesso rápido', '▦', 'os.view'], ['preventivas', 'Preventivas', '🗓️'], ['estoque', 'Peças e estoque', '📦', 'stock.view'], ['custos', 'Custos', '💰', 'cost.view'], ['analises', 'Análises (Pareto/Banheira)', '🔎', 'indicator.view'], ['relatorios', 'Relatórios', '📄', 'report.view'], ['usuarios', 'Usuários', '👥', 'user.manage'], ['config', 'Configurações', '⚙️', 'settings.write'], ['metodologia', 'Metodologia', '📘']];
+function layout() {
+  const u = cur(), al = alerts();
+  $('#app').innerHTML = `<div class="shell"><aside id="side"><div class="brand">🔧 PCM — Tornos<small>Planejamento e Controle da Manutenção</small></div><nav>${NAV.filter(n => !n[3] || can(n[3])).map(n => `<a href="#/${n[0]}" data-nav="${n[0]}"><span>${n[2]}</span>${E(n[1])}</a>`).join('')}</nav></aside>
+  <div class="main"><header class="top"><button class="burger" data-act="toggleSide">☰</button><div class="title">Sistema PCM — Tornos Mecânicos <small class="mut">· banco de dados central</small></div>
+  <div class="bell"><button class="btn" data-act="bell">🔔<span class="cnt" ${al.length ? '' : 'hidden'}>${al.length}</span></button><div class="dd" id="dd" hidden>${al.length ? al.map(a => `<a href="${a.href}"><span class="dot ${a.level}"></span>${E(a.text)}</a>`).join('') : '<div class="empty">Sem notificações.</div>'}</div></div>
+  <div style="text-align:right"><b>${E(u.name)}</b><br><small>${ROLES[u.role]}</small></div><button class="btn" data-act="logout">Sair</button></header><div id="view"></div></div></div>`;
+}
+ACT.toggleSide = () => $('#side').classList.toggle('open');
+ACT.bell = (d, el) => { const dd = $('#dd'); dd.hidden = !dd.hidden; };
+ACT.logout = () => { logout(); location.hash = ''; boot(); };
+function loginScreen() {
+  $('#app').innerHTML = `<div class="login"><form class="box" id="lf"><h2 style="color:var(--pri)">🔧 PCM — Tornos Mecânicos</h2><p class="mut">Planejamento e Controle da Manutenção</p><input name="u" placeholder="Usuário" autocomplete="username" autofocus required><input name="p" type="password" placeholder="Senha" autocomplete="current-password" required><button class="btn pri" style="width:100%">Entrar</button><div class="ferr" id="lerr" hidden></div><div class="demo"><b>Acesso corporativo</b><br>Utilize seu usuário individual. As contas e permissões são administradas no sistema. <div id="init-note" style="margin-top:6px"></div></div></form></div>`;
+  const initNote = $('#init-note');
+  if (!cloudInitialized) initNote.innerHTML = 'O banco de dados ainda não foi inicializado. Exporte um backup JSON do sistema antigo e acesse <a href="/importar_dados.html">Importar dados</a>.';
+  $('#lf').onsubmit = async e => {
+    e.preventDefault(); const form = e.target, button = $('button', form), x = $('#lerr'); button.disabled = true; button.textContent = 'Conectando…'; x.hidden = true;
+    try {
+      const result = await apiRequest('/login', { method: 'POST', body: JSON.stringify({ username: form.elements.u.value, password: form.elements.p.value }) }, false);
+      cloudToken = result.token; sessionStorage.setItem('pcm_cloud_token_v1', cloudToken); sessionStorage.setItem('pcm_cloud_user_v1', result.user.id);
+      db = result.data; cloudVersion = result.version; cloudConflict = false; _session = result.user.id;
+      audit('login', 'user', result.user.id); await saveDB();
+      const requested = location.hash; location.hash = (!requested || requested === '#' || requested === '#/') ? '#/dashboard' : requested; await boot();
+    } catch (err) { x.hidden = false; x.textContent = err.message; }
+    finally { button.disabled = false; button.textContent = 'Entrar'; }
+  };
+}
+/* ---------- roteador ---------- */
+const VIEWS = {};
+function renderRoute() {
+  if (!cur()) return loginScreen();
+  if (!$('#view')) layout();
+  const parts = (location.hash.replace(/^#\/?/, '') || 'dashboard').split('/'), name = parts[0], nav = NAV.find(n => n[0] === name || (name === 'os' && n[0] === 'os'));
+  const fn = VIEWS[name];
+  $$('[data-nav]').forEach(a => a.classList.toggle('on', a.dataset.nav === name));
+  $('#side').classList.remove('open');
+  if (!fn || (nav && nav[3] && !can(nav[3]))) { setView('<div class="card"><h2>Acesso não autorizado</h2><p>Seu perfil não possui permissão para este módulo (a validação é feita também nas operações de dados).</p></div>'); return; }
+  try { fn(parts[1]); tbAll(); } catch (e) { console.error(e); setView(`<div class="card"><h2>Erro ao exibir a tela</h2><p>${E(e.message)}</p></div>`); }
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', () => { closeModal(); renderRoute(); });
+async function boot() {
+  $('#app').innerHTML = '<div class="login"><div class="box">Conectando ao servidor PCM…</div></div>';
+  const savedToken = sessionStorage.getItem('pcm_cloud_token_v1'), savedUser = sessionStorage.getItem('pcm_cloud_user_v1');
+  if (savedToken && savedUser) {
+    cloudToken = savedToken;
+    try {
+      const result = await apiRequest('/state', { method: 'GET' });
+      db = result.data; cloudVersion = result.version; _session = savedUser; cloudConflict = false;
+      if (cur()) { layout(); renderRoute(); return; }
+    } catch (e) { console.warn('Sessão PCM não restaurada:', e.message); }
+    logout();
+  }
+  cloudToken = null; _session = null; db = null;
+  try { const status = await apiRequest('/status', { method: 'GET' }, false); cloudInitialized = !!status.initialized; }
+  catch (e) { cloudInitialized = false; }
+  $('#app').innerHTML = ''; loginScreen();
+}
+
+/* =====================================================================
+   PAINEL
+   ===================================================================== */
+VIEWS.dashboard = () => {
+  const f = periodDefaults('dash'), ids = idsOf(f), per = mkPeriod(f.from, f.to), c = compute(ids, per), S = db.settings;
+  const rows = costRows(ids, per), cs = costSummary(rows), months = monthly(ids, f.from, f.to), eqs = ids.map(eq);
+  const st = { operacional: 0, manutencao: 0, indisponivel: 0 }; eqs.forEach(e => st[equipStatus(e)]++);
+  const oss = db.workOrders.filter(o => ids.includes(o.equipId));
+  const osA = oss.filter(o => ['Aberta', 'Planejada'].includes(o.status)).length, osE = oss.filter(o => ['Em execução', 'Aguardando peças'].includes(o.status)).length, osC = oss.filter(o => done(o) && inP(o.actualEnd || o.plannedStart, per)).length;
+  const plans = db.plans.filter(p => ids.includes(p.equipId) && p.status !== 'inativo').map(planDue), prox = plans.filter(d => d.state === 'proxima').length, venc = plans.filter(d => d.state === 'vencida').length;
+  const defAtivos = db.failures.filter(x => ids.includes(x.equipId) && (x.status === 'Aberta' || x.status === 'Em reparo')), eqDef = new Set(defAtivos.map(x => x.equipId)).size;
+  const cost = can('cost.view');
+  setView(`<h1>Painel</h1>${filterBar('dash')}${notes(c.flags.slice(0, 3))}
+  <div class="grid g4">${kpi('Tornos cadastrados', eqs.length, 'ativos (não arquivados)', 'blue')}${kpi('Operacionais', st.operacional, 'disponíveis para uso', 'green')}${kpi('Em manutenção', st.manutencao, 'OS em execução', st.manutencao ? 'yellow' : 'green')}${kpi('Indisponíveis', st.indisponivel, 'parados por falha', st.indisponivel ? 'red' : 'green')}
+  ${kpi('Defeitos ativos', defAtivos.length, `${eqDef} equipamento(s) afetado(s)`, defAtivos.length ? 'red' : 'green')}${kpi('Preventivas próximas / atrasadas', `${prox} / ${venc}`, 'conforme planos ativos', venc ? 'red' : prox ? 'yellow' : 'green')}${kpi('OS abertas · em execução · concluídas', `${osA} · ${osE} · ${osC}`, 'concluídas no período', 'blue')}
+  ${kpi('Disponibilidade média da frota', fP(c.avail), c.availTheo != null ? 'MTBF/(MTBF+MTTR)' : 'operacional (horas programadas)', goalColor(c.avail, S.goalAvail))}
+  ${kpi('MTBF médio', c.mtbf != null ? fN(c.mtbf) + ' h' : '—', c.mtbf == null ? 'sem falhas / sem horas' : `meta ≥ ${fN(S.goalMtbf, 0)} h`, goalColor(c.mtbf, S.goalMtbf))}${kpi('MTTR médio', c.mttr != null ? fN(c.mttr) + ' h' : '—', `meta ≤ ${fN(S.goalMttr, 0)} h`, goalColor(c.mttr, S.goalMttr, true))}${kpi('Cumprimento preventivo', fP(c.comp.pct), `${c.comp.exec}/${c.comp.prog} executadas`, goalColor(c.comp.pct, S.goalCompliance))}
+  ${cost ? kpi('Custo de manutenção (real)', fR(cs.real), cs.est ? `+ ${fR(cs.est)} estimados` : 'no período', 'blue') + kpi('Gasto com peças e materiais', fR(cs.parts), 'real + estimado', 'blue') : ''}</div>
+  <div class="grid g2" style="margin-top:14px">
+   ${cost ? `<div class="card"><h3>Custos mensais por tipo de manutenção</h3>${chartBox('d1')}</div>` : ''}
+   <div class="card"><h3>Disponibilidade mensal vs meta</h3>${chartBox('d2')}</div>
+   <div class="card"><h3>Quantidade de falhas por mês</h3>${chartBox('d3')}</div>
+   <div class="card"><h3>Tipos de manutenção (OS no período)</h3>${chartBox('d4')}</div>
+   ${cost ? `<div class="card"><h3>Preventiva × corretiva (custo real)</h3>${chartBox('d5')}</div>` : ''}
+   <div class="card"><h3>Principais causas de falhas</h3>${chartBox('d6')}</div></div>`);
+  const lab = months.map(m => m.label), tipo = t => months.map(m => round(sum(m.costs.filter(r => r.type === t), r => r.value)));
+  if (cost) mkChart('d1', { type: 'bar', data: { labels: lab, datasets: [{ label: 'Preventiva', data: tipo('Preventiva'), backgroundColor: COLORS.ok }, { label: 'Corretiva', data: tipo('Corretiva'), backgroundColor: COLORS.bad }, { label: 'Outras', data: months.map(m => round(sum(m.costs.filter(r => !['Preventiva', 'Corretiva'].includes(r.type)), r => r.value))), backgroundColor: COLORS.gray }] }, options: { scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => 'R$ ' + v } } }, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: x => `${x.dataset.label}: ${fR(x.raw)}` } } } } });
+  mkChart('d2', { type: 'line', data: { labels: lab, datasets: [{ label: 'Disponibilidade (%)', data: months.map(m => round(m.c.avail)), borderColor: COLORS.pri2, backgroundColor: COLORS.pri2, tension: .25, spanGaps: true }, { label: 'Meta', data: lab.map(() => S.goalAvail), borderColor: COLORS.bad, borderDash: [6, 4], pointRadius: 0 }] }, options: { scales: { y: { suggestedMin: 80, suggestedMax: 100 } } } });
+  mkChart('d3', { type: 'bar', data: { labels: lab, datasets: [{ label: 'Falhas funcionais', data: months.map(m => m.c.nFail), backgroundColor: COLORS.acc }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+  const tc = {}; oss.filter(o => o.status !== 'Cancelada' && inP(o.plannedStart, per)).forEach(o => tc[o.type] = (tc[o.type] || 0) + 1);
+  mkChart('d4', { type: 'doughnut', data: { labels: Object.keys(tc), datasets: [{ data: Object.values(tc), backgroundColor: PAL }] } });
+  if (cost) mkChart('d5', { type: 'bar', data: { labels: ['Preventiva', 'Corretiva'], datasets: [{ label: 'Custo real', data: [round(cs.prev), round(cs.corr)], backgroundColor: [COLORS.ok, COLORS.bad] }] }, options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: x => fR(x.raw) } } }, scales: { y: { beginAtZero: true } } } });
+  const pc = pareto(ids, per, 'cause', 'count'); mkChart('d6', { type: 'bar', data: { labels: pc.map(x => x.k), datasets: [{ label: 'Falhas', data: pc.map(x => x.v), backgroundColor: PAL }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } } } } });
+};
+
+/* =====================================================================
+   EQUIPAMENTOS
+   ===================================================================== */
+const EQ_FIELDS = () => [
+  { n: 'code', l: 'Código patrimonial / interno', req: 1 }, { n: 'name', l: 'Nome do equipamento', req: 1 }, { n: 'maker', l: 'Fabricante' }, { n: 'model', l: 'Modelo' }, { n: 'serial', l: 'Número de série' },
+  { n: 'type', l: 'Tipo de torno', hint: 'Ex.: universal, revólver, CNC' }, { n: 'mfgDate', l: 'Data de fabricação', t: 'date' }, { n: 'acqDate', l: 'Data de aquisição', t: 'date' }, { n: 'instDate', l: 'Data de instalação', t: 'date' },
+  { n: 'location', l: 'Localização / setor' }, { n: 'owner', l: 'Responsável pelo equipamento' }, { n: 'status', l: 'Estado operacional base', t: 'select', opts: [{ v: 'operacional', l: 'Operacional' }, { v: 'indisponivel', l: 'Indisponível (desativado temporariamente)' }], blank: false, hint: 'Em manutenção/indisponível por falha é apurado automaticamente pelas OS e paradas.' },
+  { n: 'acqValue', l: 'Valor de aquisição (R$)', t: 'number', step: '0.01', min: 0, hint: 'Não é considerado despesa de manutenção.' }, { n: 'estValue', l: 'Valor estimado atual (R$)', t: 'number', step: '0.01', min: 0 },
+  { n: 'power', l: 'Potência do motor principal (kW)', t: 'number', step: '0.01', min: 0 }, { n: 'voltage', l: 'Tensão elétrica' }, { n: 'rpm', l: 'Rotação nominal (rpm)', t: 'number', min: 0 }, { n: 'capacity', l: 'Capacidade de usinagem' },
+  { n: 'hours', l: 'Horas de operação acumuladas (h)', t: 'number', step: '0.1', min: 0 }, { n: 'description', l: 'Descrição e observações', t: 'textarea', full: 1 }];
+ACT.newEquip = () => ask('Novo torno', EQ_FIELDS(), { status: 'operacional', hours: 0 }, v => saveEquip(v));
+ACT.editEquip = d => ask('Editar equipamento', EQ_FIELDS(), eq(d.id), v => saveEquip({ ...v, id: d.id }));
+ACT.archiveEquip = d => { const e = eq(d.id); confirmBox(e.archived ? `Reativar ${e.code}?` : `Arquivar ${e.code}? O histórico é preservado e o equipamento deixa de aparecer nas listas ativas.`, () => archiveEquip(d.id, !e.archived)); };
+ACT.deleteEquip = d => confirmBox('Excluir definitivamente este equipamento? (só é possível sem histórico)', () => deleteEquip(d.id), 'Excluir');
+VIEWS.equipamentos = id => id ? eqDetail(id) : eqList();
+function eqList() {
+  setView(`<div class="row sp"><h1>Equipamentos</h1>${can('equip.write') ? btn('newEquip', '+ Novo torno', '', 'btn pri') : ''}</div><div class="card">${table('eq', {
+    rows: () => db.equipment, empty: 'Nenhum equipamento cadastrado.', filters: [{ k: 's', l: 'Estado', o: [{ v: 'operacional', l: 'Operacional' }, { v: 'manutencao', l: 'Em manutenção' }, { v: 'indisponivel', l: 'Indisponível' }], get: e => equipStatus(e) }, { k: 'a', l: 'Situação', o: [{ v: 'ativo', l: 'Ativos' }, { v: 'arq', l: 'Arquivados' }], get: e => e.archived ? 'arq' : 'ativo' }],
+    cols: [{ l: 'Código', v: e => e.code, r: e => `<a href="#/equipamentos/${e.id}"><b>${E(e.code)}</b></a>` }, { l: 'Equipamento', v: e => e.name, r: e => `${E(e.name)}<br><small>${E(e.maker || '')} ${E(e.model || '')}</small>` }, { l: 'Local', v: e => e.location || '' }, { l: 'Estado', v: e => equipStatus(e), r: e => e.archived ? badge('Arquivado', 'gray') : statusBadge(e) },
+    { l: 'Horas', num: 1, v: e => e.hours || 0, r: e => fN(e.hours || 0, 0) + ' h' }, { l: 'Última manutenção', v: e => lastMaint(e) || '', r: e => fD(lastMaint(e)) }, { l: 'Próxima preventiva', v: e => nextPrev(e)?.t || 0, r: e => nextPrev(e)?.l || '—' },
+    { l: '', r: e => `<div class="row">${btn('go', 'Abrir', `data-h="#/equipamentos/${e.id}"`)}${can('equip.write') ? btn('editEquip', 'Editar', `data-id="${e.id}"`) + btn('archiveEquip', e.archived ? 'Reativar' : 'Arquivar', `data-id="${e.id}"`) : ''}</div>` }]
+  })}</div>`);
+}
+ACT.go = d => { location.hash = d.h; };
+const lastMaint = e => { const l = db.workOrders.filter(o => o.equipId === e.id && done(o) && o.actualEnd).sort((a, b) => P(b.actualEnd) - P(a.actualEnd))[0]; return l ? l.actualEnd : null; };
+function nextPrev(e) { const ds = db.plans.filter(p => p.equipId === e.id && p.status !== 'inativo').map(p => ({ p, d: planDue(p) })).filter(x => x.d.due || x.d.nextHours != null); const dated = ds.filter(x => x.d.due).sort((a, b) => a.d.due - b.d.due)[0]; return dated ? { t: dated.d.due.getTime(), l: `${fD(dated.d.due)} — ${E(dated.p.name)}` } : null; }
+
+const EQ_TABS = [['geral', 'Visão geral'], ['ind', 'Indicadores'], ['falhas', 'Defeitos e falhas'], ['os', 'Ordens de serviço'], ['prev', 'Preventiva'], ['pecas', 'Peças e materiais'], ['custos', 'Custos'], ['tl', 'Linha do tempo'], ['docs', 'Documentos'], ['rel', 'Relatórios']];
+ACT.eqTab = d => { UI.eqTab = d.t; refresh(); };
+function eqDetail(id) {
+  const e = eq(id); if (!e) return setView('<div class="card">Equipamento não encontrado. <a href="#/equipamentos">Voltar</a></div>');
+  const t = UI.eqTab, body = ({ geral: eqGeral, ind: eqInd, falhas: eqFalhas, os: eqOS, prev: eqPrev, pecas: eqPecas, custos: eqCustos, tl: eqTL, docs: eqDocs, rel: eqRel }[t] || eqGeral)(e);
+  setView(`<div class="row sp"><div><a href="#/equipamentos">← Equipamentos</a><h1>${E(e.code)} — ${E(e.name)} ${e.archived ? badge('Arquivado', 'gray') : statusBadge(e)}</h1></div><div class="row">${btn('showEqQR', '▦ QR para abrir OS', `data-id="${id}"`, 'btn')}${can('equip.write') ? btn('editEquip', 'Editar', `data-id="${id}"`, 'btn') : ''}${can('failure.report') ? btn('newFailure', '+ Registrar defeito', `data-eq="${id}"`, 'btn acc') : ''}</div></div>
+  <div class="tabs">${EQ_TABS.map(x => `<button class="${t === x[0] ? 'on' : ''}" data-act="eqTab" data-t="${x[0]}">${x[1]}</button>`).join('')}</div>${body}`);
+}
+function eqGeral(e) {
+  const per = mkPeriod(toISO(addMonths(new Date(), -12)), toISO(new Date())), c = compute([e.id], per), S = db.settings;
+  const kv = [['Fabricante / modelo', `${e.maker || '—'} / ${e.model || '—'}`], ['Nº de série', e.serial || '—'], ['Tipo', e.type || '—'], ['Local', e.location || '—'], ['Responsável', e.owner || '—'], ['Fabricação', fD(e.mfgDate)], ['Aquisição', fD(e.acqDate)], ['Instalação', fD(e.instDate)], ['Valor de aquisição', fR(e.acqValue)], ['Valor estimado atual', fR(e.estValue)], ['Potência', e.power != null ? fN(e.power, 1) + ' kW' : '—'], ['Tensão', e.voltage || '—'], ['Rotação nominal', e.rpm != null ? e.rpm + ' rpm' : '—'], ['Capacidade', e.capacity || '—'], ['Horas acumuladas', fN(e.hours || 0, 0) + ' h'], ['Última manutenção', fD(lastMaint(e))], ['Próxima preventiva', nextPrev(e)?.l || '—']];
+  return `<div class="grid g2"><div class="card"><h3>Identificação e dados técnicos</h3><dl class="kv">${kv.map(([k, v]) => `<dt>${k}</dt><dd>${E(v)}</dd>`).join('')}</dl><p class="mut">${E(e.description || '')}</p>${can('equip.write') ? `<div class="row">${btn('archiveEquip', e.archived ? 'Reativar' : 'Arquivar equipamento', `data-id="${e.id}"`)}${btn('deleteEquip', 'Excluir (somente sem histórico)', `data-id="${e.id}"`, 'btn sm bad')}</div>` : ''}</div>
+  <div><div class="grid g2">${kpi('Disponibilidade (12 meses)', fP(c.avail), '', goalColor(c.avail, S.goalAvail))}${kpi('MTBF', c.mtbf != null ? fN(c.mtbf) + ' h' : '—', '', goalColor(c.mtbf, S.goalMtbf))}${kpi('MTTR', c.mttr != null ? fN(c.mttr) + ' h' : '—', '', goalColor(c.mttr, S.goalMttr, true))}${kpi('Cumprimento preventivo', fP(c.comp.pct), '', goalColor(c.comp.pct, S.goalCompliance))}</div>${notes(c.flags.slice(0, 2))}</div></div>`;
+}
+function eqInd(e) {
+  const f = { from: toISO(addMonths(new Date(), -12)), to: toISO(new Date()) }, ms = monthly([e.id], f.from, f.to);
+  setTimeout(() => { mkChart('ei1', { type: 'line', data: { labels: ms.map(m => m.label), datasets: [{ label: 'Disponibilidade (%)', data: ms.map(m => round(m.c.avail)), borderColor: COLORS.pri2, spanGaps: true }, { label: 'Meta', data: ms.map(() => db.settings.goalAvail), borderColor: COLORS.bad, borderDash: [6, 4], pointRadius: 0 }] } }); mkChart('ei2', { type: 'bar', data: { labels: ms.map(m => m.label), datasets: [{ label: 'Falhas', data: ms.map(m => m.c.nFail), backgroundColor: COLORS.acc }] } }); }, 0);
+  return `<div class="grid g2"><div class="card"><h3>Disponibilidade — últimos 12 meses</h3>${chartBox('ei1')}</div><div class="card"><h3>Falhas por mês</h3>${chartBox('ei2')}</div></div><p><a href="#/indicadores" data-act="goInd" data-id="${e.id}">Abrir módulo completo de indicadores deste equipamento →</a></p>`;
+}
+ACT.goInd = d => { periodDefaults('ind').equip = d.id; location.hash = '#/indicadores'; };
+const failCols = (showEq) => [{ l: 'Nº', v: f => f.number, r: f => `<a href="#" data-act="viewFailure" data-id="${f.id}"><b>${E(f.number)}</b></a>` }, { l: 'Data', v: f => f.date, r: f => fDT(f.date) }, ...(showEq ? [{ l: 'Equipamento', v: f => eqName(f.equipId), r: f => E(eq(f.equipId).code) }] : []), { l: 'Defeito', v: f => f.description, r: f => `${E(f.description)}${failureRecurrence(f) ? ` <span class="badge orange">reincidente ×${failureRecurrence(f) + 1}</span>` : ''}` }, { l: 'Componente', v: f => f.component || '' }, { l: 'Causa', v: f => f.causeClass }, { l: 'Criticidade', v: f => CRIT.indexOf(f.criticality), r: f => critBadge(f.criticality) }, { l: 'Parada (h)', num: 1, v: f => f.downtime ?? -1, r: f => f.downtime != null ? fN(f.downtime) : f.needsStop && !f.stopEnd ? badge('em andamento', 'red') : '—' }, { l: 'Situação', v: f => f.status, r: f => fBadge(f.status) }];
+function eqFalhas(e) { return `<div class="card">${table('eqf' + e.id, { rows: () => db.failures.filter(f => f.equipId === e.id), cols: failCols(false), dates: f => f.date })}</div>`; }
+function eqOS(e) { return `<div class="card">${table('eqo' + e.id, { rows: () => db.workOrders.filter(o => o.equipId === e.id), cols: osCols(false), dates: o => o.plannedStart })}</div>`; }
+function eqPrev(e) { return `<div class="row sp"><h3>Plano de manutenção preventiva</h3>${can('plan.write') ? btn('newPlan', '+ Atividade', `data-eq="${e.id}"`, 'btn pri') + btn('planTemplates', 'Modelos editáveis', `data-eq="${e.id}"`) : ''}</div><div class="card">${table('eqp' + e.id, { rows: () => db.plans.filter(p => p.equipId === e.id), cols: planCols(false) })}</div>`; }
+function eqPecas(e) {
+  const m = {}; db.movements.filter(x => x.equipId === e.id && (x.type === 'saida' || x.type === 'estorno')).forEach(x => { const r = m[x.itemId] = m[x.itemId] || { itemId: x.itemId, qty: 0, cost: 0 }; const s = x.type === 'saida' ? 1 : -1; r.qty += s * x.qty; r.cost += s * x.qty * x.unitCost; });
+  const arr = Object.values(m).filter(r => r.qty > 0.0001);
+  return `<div class="card"><h3>Consumo de peças e materiais</h3>${arr.length ? `<table><thead><tr><th>Item</th><th class="num">Qtde</th><th class="num">Custo</th></tr></thead><tbody>${arr.map(r => `<tr><td>${E(item(r.itemId).name)}</td><td class="num">${fN(r.qty, 1)} ${E(item(r.itemId).unit)}</td><td class="num">${fR(r.cost)}</td></tr>`).join('')}</tbody><tfoot><tr><th>Total</th><th></th><th class="num">${fR(sum(arr, r => r.cost))}</th></tr></tfoot></table>` : '<div class="empty">Nenhum consumo registrado.</div>'}</div>`;
+}
+function eqCustos(e) {
+  if (!can('cost.view')) return '<div class="card">Sem permissão para consultar custos.</div>';
+  const per = mkPeriod('2000-01-01', toISO(new Date())), rows = costRows([e.id], per), cs = costSummary(rows);
+  return `<div class="grid g4">${kpi('Custo acumulado real', fR(cs.real), 'manutenção', 'blue')}${kpi('Estimado', fR(cs.est), 'não realizado', 'yellow')}${kpi('Preventiva', fR(cs.prev), '', 'green')}${kpi('Corretiva', fR(cs.corr), '', 'red')}</div><div class="note info">O valor de aquisição (${fR(e.acqValue)}) é investimento e <b>não</b> entra nas despesas de manutenção.</div><div class="card">${table('eqc' + e.id, { rows: () => rows, cols: costCols(), dates: r => r.date })}</div>`;
+}
+function eqTL(e) {
+  const ev = []; if (e.instDate) ev.push({ d: e.instDate, t: 'Instalação do equipamento', c: 'green' }); else if (e.acqDate) ev.push({ d: e.acqDate, t: 'Aquisição do equipamento', c: 'green' });
+  db.failures.filter(f => f.equipId === e.id).forEach(f => ev.push({ d: f.date, t: `Falha ${f.number}: ${f.description} (${f.criticality})`, c: f.criticality === 'Crítica' || f.criticality === 'Alta' ? 'red' : 'yellow' }));
+  db.workOrders.filter(o => o.equipId === e.id && o.status !== 'Cancelada').forEach(o => ev.push({ d: o.actualEnd || o.plannedStart, t: `${o.number} (${o.type}) — ${o.description} · ${o.status}`, c: done(o) ? 'green' : '' }));
+  const evs = ev.sort((a, b) => P(b.d) - P(a.d));
+  return `<div class="card"><h3>Linha do tempo</h3><div class="tl">${evs.map(x => `<div class="ev ${x.c}"><b>${fDT(x.d)}</b><br>${E(x.t)}</div>`).join('') || '<div class="empty">Sem eventos.</div>'}</div></div>`;
+}
+function eqDocs(e) {
+  return `<div class="card"><div class="row sp"><h3>Documentação técnica</h3>${can('equip.write') ? btn('addDoc', '+ Anexar documento', `data-id="${e.id}"`, 'btn pri') : ''}</div>${e.docs.length ? `<table><thead><tr><th>Arquivo</th><th>Tamanho</th><th></th></tr></thead><tbody>${e.docs.map((d, i) => `<tr><td>${E(d.name)}</td><td>${fN(d.size / 1024, 0)} KB</td><td class="row"><a class="btn sm" href="${d.data}" download="${E(d.name)}">Baixar</a>${can('equip.write') ? btn('rmDoc', 'Remover', `data-id="${e.id}" data-i="${i}"`) : ''}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">Nenhum documento anexado.</div>'}<p class="note info">Protótipo: anexos ficam no navegador (limite de 450 KB por arquivo).</p></div>`;
+}
+ACT.addDoc = d => ask('Anexar documento', [{ n: 'f', l: 'Arquivo (manual, ficha técnica, foto…)', t: 'file', req: 1 }], {}, v => v.f.forEach(x => addDoc(d.id, x)));
+ACT.rmDoc = d => confirmBox('Remover este documento?', () => removeDoc(d.id, +d.i));
+function eqRel(e) { return `<div class="card"><h3>Relatórios</h3><p>Gere o relatório técnico de operação e manutenção deste equipamento (PDF/Excel).</p><a class="btn pri" href="#/relatorios" data-act="goRel" data-id="${e.id}">Abrir gerador de relatórios</a></div>`; }
+ACT.goRel = d => { periodDefaults('rel').equip = d.id; location.hash = '#/relatorios'; };
+
+/* =====================================================================
+   INDICADORES
+   ===================================================================== */
+const REC_FIELDS = () => [{ n: 'equipId', l: 'Equipamento', t: 'select', opts: () => equipOpts(), req: 1, blank: false }, { n: 'start', l: 'Data inicial', t: 'date', req: 1 }, { n: 'end', l: 'Data final', t: 'date', req: 1 }, { n: 'scheduled', l: 'Horas programadas (h)', t: 'number', step: '0.1', min: 0, req: 1 }, { n: 'operated', l: 'Horas efetivamente operadas (h)', t: 'number', step: '0.1', min: 0, req: 1, hint: 'Atualiza as horas acumuladas do equipamento.' }, { n: 'notes', l: 'Observações técnicas', t: 'textarea', full: 1 }];
+ACT.newRecord = () => ask('Registro de operação', REC_FIELDS(), { equipId: periodDefaults('ind').equip !== 'all' ? periodDefaults('ind').equip : '' }, v => saveRecord(v));
+ACT.editRecord = d => ask('Editar registro de operação', REC_FIELDS(), db.records.find(r => r.id === d.id), v => saveRecord({ ...v, id: d.id }));
+ACT.delRecord = d => confirmBox('Excluir este registro de operação?', () => deleteRecord(d.id), 'Excluir');
+VIEWS.indicadores = () => {
+  const f = periodDefaults('ind'), ids = idsOf(f), per = mkPeriod(f.from, f.to), c = compute(ids, per), S = db.settings, ms = monthly(ids, f.from, f.to), lab = ms.map(m => m.label);
+  const tt = UI.rt ?? 100;
+  const r = c.lambda != null ? reliability(c.lambda, tt) : null;
+  const an = [];
+  if (c.mtbf != null && c.mtbf < S.goalMtbf && c.mttr != null && c.mttr > S.goalMttr) an.push('MTBF baixo e MTTR elevado: investigar a frequência das falhas e as dificuldades de reparo (diagnóstico, peças, procedimentos).');
+  else if (c.mtbf != null && c.mtbf >= S.goalMtbf && c.mttr != null && c.mttr <= S.goalMttr) an.push('MTBF elevado e MTTR baixo: cenário geralmente favorável à confiabilidade e à recuperação.');
+  else { if (c.mtbf != null && c.mtbf < S.goalMtbf) an.push('MTBF abaixo da meta: investigar frequência de falhas, desgaste e oportunidades de melhoria.'); if (c.mttr != null && c.mttr > S.goalMttr) an.push('MTTR acima da meta: investigar diagnóstico, disponibilidade de peças e capacitação.'); }
+  if (c.avail != null && c.avail < S.goalAvail) an.push('Disponibilidade abaixo da meta: investigar paradas, frequência de falhas e duração dos reparos.');
+  if (c.comp.pct != null && c.comp.pct < S.goalCompliance) an.push('Cumprimento preventivo abaixo da meta: avaliar atrasos, recursos disponíveis e prioridades.');
+  setView(`<div class="row sp"><h1>Indicadores de desempenho</h1>${can('indicator.write') ? btn('newRecord', '+ Registro de operação', '', 'btn pri') : ''}</div>${filterBar('ind')}${notes(c.flags)}
+  <div class="grid g4">${kpi('Disponibilidade', fP(c.avail), c.availTheo != null ? 'teórica: MTBF/(MTBF+MTTR)' : 'operacional', goalColor(c.avail, S.goalAvail))}${kpi('Disponibilidade operacional', fP(c.availOp), `(prog. − paradas)/prog. · paradas ${fN(c.down)} h`, goalColor(c.availOp, S.goalAvail))}${kpi('MTBF', c.mtbf != null ? fN(c.mtbf) + ' h' : 'não calculável', `${fN(c.operated, 0)} h operadas / ${c.nFail} falha(s)`, goalColor(c.mtbf, S.goalMtbf))}${kpi('MTTR', c.mttr != null ? fN(c.mttr) + ' h' : 'não calculável', `${fN(c.repH)} h de reparo / ${c.nRep} reparada(s)`, goalColor(c.mttr, S.goalMttr, true))}
+  ${kpi('Cumprimento preventivo', fP(c.comp.pct), `${c.comp.exec} exec. · ${c.comp.pend} pend. · ${c.comp.late} atras. · ${c.comp.canc} canc. de ${c.comp.prog}`, goalColor(c.comp.pct, S.goalCompliance))}${kpi('Taxa de falhas (λ)', c.lambda != null ? fN(c.lambda1000, 2) + ' /1000 h' : 'não calculável', c.lambda != null ? `${fN(c.lambda, 5)} /h · também 1/MTBF` : '', 'blue')}${kpi(`Confiabilidade R(${tt} h)`, r != null ? fP(r * 100) : '—', c.lambda == null ? 'sem taxa de falhas' : c.reliableOK ? 'estimativa (λ constante)' : 'dados insuficientes — indicativo', r != null && c.reliableOK ? 'blue' : 'yellow')}${kpi('Horas de manutenção preventiva', fN(c.prevH) + ' h', 'trabalho técnico em OS preventivas', 'blue')}</div>
+  <div class="note info"><b>Metodologia.</b> <span class="formula">Disp = MTBF/(MTBF+MTTR)×100</span> · <span class="formula">MTBF = horas operadas / nº de falhas</span> · <span class="formula">MTTR = horas de reparo / falhas reparadas</span> · <span class="formula">λ = falhas / horas operadas</span> · <span class="formula">R(t) = e^(−λt)</span>. A disponibilidade operacional usa as horas programadas e as paradas efetivas (sem somar sobreposições) e pode diferir da teórica. R(t) pressupõe taxa de falhas constante. Veja a aba “Metodologia”.</div>
+  <div class="grid g2"><div class="card"><h3>Disponibilidade: histórico e meta</h3>${chartBox('i1')}</div><div class="card"><h3>MTBF e MTTR por mês (h)</h3>${chartBox('i2')}</div><div class="card"><h3>Cumprimento preventivo (%)</h3>${chartBox('i3')}</div>
+  <div class="card"><h3>Confiabilidade estimada R(t)</h3><div class="row noprint"><label>Intervalo t (h) <input type="number" id="rt" value="${tt}" min="1" style="width:100px"></label><button class="btn" data-act="setRt">Calcular</button></div>${c.lambda != null ? chartBox('i4', 's') : '<div class="empty">λ não calculável no período.</div>'}${c.lambda != null && !c.reliableOK ? '<div class="note">Dados insuficientes: não trate como estimativa confiável.</div>' : ''}</div></div>
+  <div class="card"><h3>Análise conjunta (sugestões de investigação)</h3>${an.length ? '<ul>' + an.map(x => `<li>${E(x)}</li>`).join('') + '</ul><p class="mut">Sugestões baseadas nos registros; não representam causas confirmadas.</p>' : '<p class="mut">Sem desvios identificados com os dados do período.</p>'}${c.comp.reasons.length ? `<h3>Preventivas não realizadas — motivos</h3><ul>${c.comp.reasons.map(x => `<li>${E(x.os)} · ${E(x.equip)}: ${E(x.reason)}</li>`).join('')}</ul>` : ''}</div>
+  <div class="card"><h3>Registros de operação</h3>${table('rec', { rows: () => db.records.filter(x => ids.includes(x.equipId)), dates: x => x.start, cols: [{ l: 'Equipamento', v: x => eqName(x.equipId) }, { l: 'Período', v: x => x.start, r: x => `${fD(x.start)} – ${fD(x.end)}` }, { l: 'Programadas', num: 1, v: x => x.scheduled, r: x => fN(x.scheduled) + ' h' }, { l: 'Operadas', num: 1, v: x => x.operated, r: x => fN(x.operated) + ' h' }, { l: 'Observações', v: x => x.notes || '' }, { l: '', r: x => can('indicator.write') ? `<div class="row">${btn('editRecord', 'Editar', `data-id="${x.id}"`)}${btn('delRecord', 'Excluir', `data-id="${x.id}"`, 'btn sm bad')}</div>` : '' }] })}</div>`);
+  mkChart('i1', { type: 'line', data: { labels: lab, datasets: [{ label: 'Disponibilidade (%)', data: ms.map(m => round(m.c.avail)), borderColor: COLORS.pri2, spanGaps: true }, { label: 'Meta', data: lab.map(() => S.goalAvail), borderColor: COLORS.bad, borderDash: [6, 4], pointRadius: 0 }] }, options: { scales: { y: { suggestedMin: 80, suggestedMax: 100 } } } });
+  mkChart('i2', { type: 'line', data: { labels: lab, datasets: [{ label: 'MTBF (h)', data: ms.map(m => round(m.c.mtbf)), borderColor: COLORS.ok, spanGaps: true, yAxisID: 'y' }, { label: 'MTTR (h)', data: ms.map(m => round(m.c.mttr)), borderColor: COLORS.bad, spanGaps: true, yAxisID: 'y1' }] }, options: { scales: { y: { position: 'left', title: { display: true, text: 'MTBF (h)' } }, y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'MTTR (h)' } } } } });
+  mkChart('i3', { type: 'bar', data: { labels: lab, datasets: [{ label: 'Cumprimento (%)', data: ms.map(m => round(m.c.comp.pct)), backgroundColor: COLORS.teal }, { type: 'line', label: 'Meta', data: lab.map(() => S.goalCompliance), borderColor: COLORS.bad, borderDash: [6, 4], pointRadius: 0 }] }, options: { scales: { y: { beginAtZero: true, max: 100 } } } });
+  if (c.lambda != null) { const mx = Math.max(tt * 2, 100), xs = Array.from({ length: 21 }, (_, i) => Math.round(mx * i / 20)); mkChart('i4', { type: 'line', data: { labels: xs, datasets: [{ label: 'R(t) %', data: xs.map(x => round(reliability(c.lambda, x) * 100)), borderColor: COLORS.pri2, pointRadius: 0 }] }, options: { scales: { x: { title: { display: true, text: 't (h)' } }, y: { min: 0, max: 100 } }, plugins: { legend: { display: false } } } }); }
+};
+ACT.setRt = () => { const v = +$('#rt').value; if (!(v > 0)) throw new AppError('Informe um intervalo positivo em horas.'); UI.rt = v; refresh(); };
+
+/* =====================================================================
+   FALHAS
+   ===================================================================== */
+function failureFields(isNew) {
+  const op = cur().role === 'operador', full = can('failure.write');
+  const base = [{ n: 'equipId', l: 'Equipamento', t: 'select', opts: () => equipOpts(), req: 1, blank: false }, { n: 'date', l: 'Data e hora da ocorrência', t: 'datetime-local', req: 1 }, { n: 'description', l: 'Descrição do defeito', t: 'textarea', req: 1, full: 1 }, { n: 'component', l: 'Componente afetado' }, { n: 'symptoms', l: 'Sintomas' }, { n: 'criticality', l: 'Grau de criticidade', t: 'select', opts: CRIT, req: 1, blank: false }, { n: 'impact', l: 'Impacto na produção' }, { n: 'needsStop', l: 'Necessidade de parada', t: 'checkbox' }, { n: 'funcional', l: 'Falha funcional (conta para MTBF/MTTR)', t: 'checkbox', def: true }, { n: 'stopStart', l: 'Data/hora da parada', t: 'datetime-local' }];
+  if (op || (isNew && !full)) return [...base, { n: 'attachments', l: 'Fotografias / documentos', t: 'file', multiple: true, full: 1 }];
+  return [...base, { n: 'stopEnd', l: 'Data/hora da liberação', t: 'datetime-local' }, { n: 'causeClass', l: 'Classificação da causa', t: 'select', opts: CAUSES, blank: false, hint: '“pendente” = ainda não diagnosticada' }, { n: 'cause', l: 'Causa identificada' }, { n: 'repairHours', l: 'Tempo de reparo — trabalho técnico (h)', t: 'number', step: '0.1', min: 0, hint: 'Diferente do tempo de indisponibilidade.' }, { n: 'solution', l: 'Solução aplicada', t: 'textarea', full: 1 }, { n: 'estCost', l: 'Custo estimado (R$)', t: 'number', step: '0.01', min: 0 }, { n: 'realCost', l: 'Custo efetivo (R$)', t: 'number', step: '0.01', min: 0, hint: 'Contabilizado só se não houver OS vinculada (evita duplicidade).' }, { n: 'status', l: 'Situação', t: 'select', opts: FSTATUS, blank: false }, { n: 'attachments', l: 'Adicionar fotografias / documentos', t: 'file', multiple: true, full: 1 }];
+}
+ACT.newFailure = d => ask('Registrar defeito / falha', failureFields(true), { equipId: d.eq || '', date: toISODT(new Date()), criticality: 'Média', causeClass: 'pendente', status: 'Aberta', funcional: true }, v => { const a = v.attachments || []; delete v.attachments; const id = saveFailure(v); const f = db.failures.find(x => x.id === id); f.attachments = a; saveDB(); toast('Defeito registrado.'); });
+ACT.editFailure = d => ask('Editar falha ' + db.failures.find(f => f.id === d.id).number, failureFields(false), db.failures.find(f => f.id === d.id), v => { const a = v.attachments || []; delete v.attachments; saveFailure({ ...v, id: d.id }); const f = db.failures.find(x => x.id === d.id); f.attachments = (f.attachments || []).concat(a); saveDB(); });
+ACT.failureToOS = d => { const id = osFromFailure(d.id); closeModal(); toast('OS criada.'); location.hash = '#/os/' + id; };
+ACT.viewFailure = d => {
+  const f = db.failures.find(x => x.id === d.id), os = db.workOrders.filter(o => o.failureId === f.id), rec = failureRecurrence(f), hist = db.failures.filter(x => x.equipId === f.equipId && x.component && x.component === f.component && x.id !== f.id);
+  const kv = [['Equipamento', eqName(f.equipId)], ['Data/hora', fDT(f.date)], ['Registrado por', userName(f.reporter)], ['Componente', f.component || '—'], ['Sintomas', f.symptoms || '—'], ['Causa', `${f.causeClass}${f.cause ? ' — ' + f.cause : ''}`], ['Criticidade', f.criticality], ['Impacto', f.impact || '—'], ['Parada', f.needsStop ? `${fDT(f.stopStart)} → ${f.stopEnd ? fDT(f.stopEnd) : 'em andamento'}` : 'Não'], ['Indisponibilidade', f.downtime != null ? fN(f.downtime) + ' h' : '—'], ['Tempo de reparo', f.repairHours != null ? fN(f.repairHours) + ' h' : '—'], ['Solução', f.solution || '—'], ['Custo est. / efetivo', `${fR(f.estCost)} / ${fR(f.realCost)}`], ['Falha funcional', f.funcional !== false ? 'Sim' : 'Não']];
+  const m = modal(`Falha ${f.number} ${''}`, `<div class="row">${fBadge(f.status)} ${critBadge(f.criticality)} ${rec ? badge('Reincidente ×' + (rec + 1), 'orange') : ''}</div><dl class="kv" style="margin-top:10px">${kv.map(([k, v]) => `<dt>${k}</dt><dd>${E(v)}</dd>`).join('')}</dl>${os.length ? `<h4 style="margin-top:12px">OS vinculadas</h4>${os.map(o => `<div><a href="#/os/${o.id}">${E(o.number)}</a> ${osBadge(o.status)}</div>`).join('')}` : ''}${hist.length ? `<h4 style="margin-top:12px">Histórico de reincidência (mesmo componente)</h4>${hist.map(h => `<div>${E(h.number)} · ${fD(h.date)} · ${E(h.description)}</div>`).join('')}` : ''}${(f.attachments || []).length ? `<h4 style="margin-top:12px">Anexos</h4>${f.attachments.map(a => `<div><a href="${a.data}" download="${E(a.name)}">${E(a.name)}</a></div>`).join('')}` : ''}<div class="mfoot">${can('failure.write') ? btn('editFailure', 'Editar', `data-id="${f.id}"`, 'btn') : ''}${can('os.write') && f.status !== 'Cancelada' && !os.some(o => o.status !== 'Cancelada') ? btn('failureToOS', 'Gerar ordem de serviço', `data-id="${f.id}"`, 'btn pri') : ''}</div>`, true);
+};
+VIEWS.falhas = () => {
+  setView(`<div class="row sp"><h1>Defeitos e falhas</h1>${can('failure.report') ? btn('newFailure', '+ Registrar defeito', '', 'btn pri') : ''}</div><div class="card">${table('fl', {
+    rows: () => db.failures, dates: f => f.date, cols: failCols(true), empty: 'Nenhuma falha registrada.',
+    filters: [{ k: 'e', l: 'Equipamento', o: () => equipOpts(true), get: f => f.equipId }, { k: 'c', l: 'Criticidade', o: CRIT, get: f => f.criticality }, { k: 'k', l: 'Causa', o: CAUSES, get: f => f.causeClass }, { k: 's', l: 'Situação', o: FSTATUS, get: f => f.status }, { k: 'r', l: 'Responsável', o: () => userOpts(), get: f => f.reporter }, { k: 'm', l: 'Componente', o: () => [...new Set(db.failures.map(f => f.component).filter(Boolean))], get: f => f.component || '' }]
+  })}</div>`);
+};
+
+</script>
+<script>
+/* =====================================================================
+   PCM Tornos — INTERFACE (parte 2): OS, preventivas, estoque, custos,
+   análises, relatórios (PDF/Excel), usuários, configurações, metodologia
+   ===================================================================== */
+
+/* ---------- colunas reutilizadas ---------- */
+function osCols(showEq) {
+  return [{ l: 'OS', v: o => o.number, r: o => `<a href="#/os/${o.id}"><b>${E(o.number)}</b></a>` }, ...(showEq ? [{ l: 'Equipamento', v: o => eqName(o.equipId), r: o => E(eq(o.equipId).code) }] : []), { l: 'Tipo', v: o => o.type }, { l: 'Descrição', v: o => o.description }, { l: 'Prioridade', v: o => PRIOR.indexOf(o.priority), r: o => badge(o.priority, { Baixa: 'green', Média: 'yellow', Alta: 'orange', Urgente: 'red' }[o.priority] || 'gray') }, { l: 'Planejada', v: o => o.plannedStart, r: o => fDT(o.plannedStart) }, { l: 'Status', v: o => o.status, r: o => osBadge(o.status) }, ...(can('cost.view') ? [{ l: 'Custo', num: 1, v: o => osCost(o), r: o => fR(osCost(o)) }] : [])];
+}
+function planCols(showEq) {
+  return [{ l: 'Atividade', v: p => p.name, r: p => `<b>${E(p.name)}</b>${p.example ? ' <small class="mut">(modelo)</small>' : ''}<br><small>${E(p.component || '')}</small>` }, ...(showEq ? [{ l: 'Equipamento', v: p => eqName(p.equipId), r: p => E(eq(p.equipId).code) }] : []), { l: 'Periodicidade', v: p => p.interval, r: p => `${p.interval} ${p.periodType}` }, { l: 'Última execução', v: p => p.lastDone || '', r: p => p.periodType === 'horas' ? (p.lastHours != null ? fN(p.lastHours, 0) + ' h' : '—') : fD(p.lastDone) }, { l: 'Próxima', v: p => { const d = planDue(p); return d.due ? d.due.getTime() : d.nextHours || 0; }, r: p => E(planDue(p).label || '—') }, { l: 'Situação', v: p => planDue(p).state, r: p => planBadge(planDue(p)) + (planDue(p).hasOS ? ' <span class="badge blue">OS aberta</span>' : '') },
+    { l: '', r: p => `<div class="row">${can('os.write') && p.status !== 'inativo' ? btn('planToOS', 'Gerar OS', `data-id="${p.id}"`) : ''}${can('plan.write') ? btn('editPlan', 'Editar', `data-id="${p.id}"`) + btn('togglePlan', p.status === 'inativo' ? 'Ativar' : 'Inativar', `data-id="${p.id}"`) : ''}</div>` }];
+}
+const costCols = () => [{ l: 'Data', v: r => r.date, r: r => fD(r.date) }, { l: 'Equipamento', v: r => eqName(r.equipId), r: r => E(eq(r.equipId).code) }, { l: 'Categoria', v: r => r.category }, { l: 'Tipo', v: r => r.type }, { l: 'Natureza', v: r => r.kind, r: r => badge(r.kind === 'real' ? 'Real' : 'Estimado', r.kind === 'real' ? 'green' : 'yellow') }, { l: 'Origem', v: r => r.source + ' ' + (r.desc || ''), r: r => E(r.source) + (r.desc ? `<br><small>${E(r.desc)}</small>` : '') }, { l: 'Valor', num: 1, v: r => r.value, r: r => fR(r.value) }];
+
+/* =====================================================================
+   ORDENS DE SERVIÇO
+   ===================================================================== */
+const OS_FIELDS = edit => [{ n: 'equipId', l: 'Equipamento', t: 'select', opts: () => equipOpts(), req: 1, blank: false }, { n: 'type', l: 'Tipo de manutenção', t: 'select', opts: OSTYPES, req: 1, blank: false }, { n: 'description', l: 'Descrição da atividade', t: 'textarea', req: 1, full: 1 }, { n: 'priority', l: 'Prioridade', t: 'select', opts: PRIOR, blank: false }, { n: 'responsible', l: 'Responsável', t: 'select', opts: () => userOpts() }, { n: 'plannedStart', l: 'Início planejado', t: 'datetime-local', req: 1 }, { n: 'plannedEnd', l: 'Fim planejado', t: 'datetime-local' }, { n: 'procedures', l: 'Procedimentos', t: 'textarea', full: 1 },
+  ...(edit ? [{ n: 'actualStart', l: 'Início real', t: 'datetime-local' }, { n: 'actualEnd', l: 'Fim real', t: 'datetime-local' }, { n: 'techHours', l: 'Trabalho técnico (h)', t: 'number', step: '0.1', min: 0, hint: 'Diferente da duração total (indisponibilidade).' }, { n: 'laborCost', l: 'Mão de obra (R$)', t: 'number', step: '0.01', min: 0, hint: 'Vazio = horas técnicas × valor/hora configurado.' }, { n: 'thirdCost', l: 'Serviços terceirizados (R$)', t: 'number', step: '0.01', min: 0, hint: 'Valores estimados; o custo real é lançado ao encerrar a OS.' }, { n: 'otherCost', l: 'Outros custos (R$)', t: 'number', step: '0.01', min: 0 }, { n: 'otherDesc', l: 'Descrição dos outros custos' }, { n: 'result', l: 'Resultado', t: 'textarea', full: 1 }, { n: 'recommendations', l: 'Recomendações', t: 'textarea', full: 1 }, { n: 'notDoneReason', l: 'Motivo de não realização (preventivas)', full: 1 }] : [])];
+ACT.newOS = d => ask('Nova ordem de serviço', OS_FIELDS(false), { equipId: d.eq || '', priority: 'Média', type: 'Corretiva', plannedStart: toISODT(new Date()) }, v => { const id = saveOS(v); location.hash = '#/os/' + id; });
+ACT.editOS = d => ask('Editar OS', OS_FIELDS(true), db.workOrders.find(o => o.id === d.id), v => saveOS({ ...v, id: d.id }));
+const STAT_LBL = { 'Planejada': 'Planejar', 'Em execução': 'Iniciar / retomar execução', 'Aguardando peças': 'Aguardar peças', 'Concluída': 'Concluir', 'Encerrada': 'Encerrar', 'Cancelada': 'Cancelar OS', 'Aberta': 'Voltar a Aberta' };
+ACT.osStatus = d => {
+  const o = db.workOrders.find(x => x.id === d.id), to = d.to;
+  if (to === 'Concluída') return ask('Concluir OS ' + o.number, [{ n: 'actualStart', l: 'Início real', t: 'datetime-local', req: 1 }, { n: 'actualEnd', l: 'Fim real', t: 'datetime-local', req: 1 }, { n: 'techHours', l: 'Trabalho técnico (h)', t: 'number', step: '0.1', min: 0, req: 1 }, { n: 'result', l: 'Resultado da intervenção', t: 'textarea', req: 1, full: 1 }, { n: 'recommendations', l: 'Recomendações', t: 'textarea', full: 1 }], { actualStart: o.actualStart || toISODT(new Date()), actualEnd: toISODT(new Date()), techHours: o.techHours, result: o.result }, v => setOSStatus(o.id, 'Concluída', '', v), { submit: 'Concluir' });
+  if (to === 'Encerrada') {
+    const labor = o.laborCost != null ? o.laborCost : round((o.techHours || 0) * db.settings.laborRate, 2);
+    return ask('Encerrar OS ' + o.number + ' e lançar custos', [{ n: 'laborCost', l: 'Mão de obra (R$)', t: 'number', step: '0.01', min: 0, req: 1, hint: `Sugestão: ${fN(o.techHours || 0)} h × ${fR(db.settings.laborRate)}/h. Ajuste se necessário.` }, { n: 'thirdCost', l: 'Serviços terceirizados (R$)', t: 'number', step: '0.01', min: 0 }, { n: 'otherCost', l: 'Outros custos (R$)', t: 'number', step: '0.01', min: 0 }, { n: 'otherDesc', l: 'Descrição dos outros custos', hint: 'Obrigatória se houver valor em "Outros custos".' }, { n: 'resumo', l: 'Peças e materiais já apontados nesta OS', ro: 1, hint: 'Somados automaticamente ao total.' }],
+      { laborCost: labor, thirdCost: o.thirdCost || 0, otherCost: o.otherCost || 0, otherDesc: o.otherDesc || '', resumo: fR(osParts(o)) },
+      v => { delete v.resumo; setOSStatus(o.id, 'Encerrada', 'Custos lançados no encerramento', { laborCost: v.laborCost, thirdCost: v.thirdCost || 0, otherCost: v.otherCost || 0, otherDesc: v.otherDesc }); toast(`OS ${o.number} encerrada. Custos lançados: ${fR(osCost(o))}.`); }, { submit: 'Encerrar e lançar custos' });
+  }
+  if (to === 'Cancelada') return ask('Cancelar OS ' + o.number, [{ n: 'note', l: 'Justificativa do cancelamento', t: 'textarea', req: 1, full: 1 }], {}, v => setOSStatus(o.id, 'Cancelada', v.note), { submit: 'Cancelar OS' });
+  setOSStatus(o.id, to, ''); toast(`OS ${o.number}: ${to}.`); refresh();
+};
+ACT.addOSItem = d => {
+  ask('Adicionar peça/material', [{ n: 'itemId', l: 'Item', t: 'select', req: 1, blank: false, opts: () => db.items.filter(i => i.active !== false).map(i => ({ v: i.id, l: `${i.code} — ${i.name} (saldo ${i.qty} ${i.unit})` })) }, { n: 'qty', l: 'Quantidade', t: 'number', step: '0.01', min: 0, req: 1 }], {}, v => addOSItem(d.id, v.itemId, v.qty));
+};
+ACT.rmOSItem = d => confirmBox('Remover este item da OS? (o consumo no estoque será estornado, se já baixado)', () => removeOSItem(d.id, d.lid));
+VIEWS.os = id => id ? osDetail(id) : osList();
+function osList() {
+  setView(`<div class="row sp"><h1>Ordens de serviço</h1>${can('os.write') ? btn('newOS', '+ Nova OS', '', 'btn pri') : ''}</div><div class="card">${table('os', { rows: () => db.workOrders.slice().reverse(), cols: osCols(true), dates: o => o.plannedStart, filters: [{ k: 'e', l: 'Equipamento', o: () => equipOpts(true), get: o => o.equipId }, { k: 't', l: 'Tipo', o: OSTYPES, get: o => o.type }, { k: 's', l: 'Status', o: OSTATUS, get: o => o.status }, { k: 'p', l: 'Prioridade', o: PRIOR, get: o => o.priority }] })}</div>`);
+}
+function osDetail(id) {
+  const o = db.workOrders.find(x => x.id === id); if (!o) return setView('<div class="card">OS não encontrada. <a href="#/os">Voltar</a></div>');
+  const f = o.failureId ? db.failures.find(x => x.id === o.failureId) : null, p = o.planId ? db.plans.find(x => x.id === o.planId) : null, dur = osDuration(o), closed = ['Encerrada', 'Cancelada'].includes(o.status);
+  const acts = TRANS[o.status].filter(s => s === 'Cancelada' ? can('os.write') : ['Encerrada', 'Aberta', 'Planejada'].includes(s) ? can('os.write') : can('os.update'));
+  const flow = ['Aberta', 'Planejada', 'Em execução', 'Aguardando peças', 'Concluída', 'Encerrada'];
+  setView(`<a href="#/os">← Ordens de serviço</a><div class="row sp"><h1>${E(o.number)} ${osBadge(o.status)}</h1><div class="row">${btn('showOSQR', '▦ QR da OS', `data-id="${o.id}"`, 'btn')}${!closed && can('os.update') ? btn('editOS', 'Editar', `data-id="${o.id}"`, 'btn') : ''}${acts.map(s => btn('osStatus', STAT_LBL[s], `data-id="${o.id}" data-to="${s}"`, s === 'Cancelada' ? 'btn bad' : s === 'Concluída' ? 'btn acc' : 'btn pri')).join('')}</div></div>
+  <div class="card"><div class="row" style="gap:4px">${flow.map(s => `<span class="badge ${o.status === s ? 'blue' : flow.indexOf(s) < flow.indexOf(o.status) ? 'green' : 'gray'}">${s}</span>`).join(' → ')}</div></div>
+  <div class="grid g2"><div class="card"><h3>Dados da ordem</h3><dl class="kv"><dt>Equipamento</dt><dd><a href="#/equipamentos/${o.equipId}">${E(eqName(o.equipId))}</a></dd><dt>Tipo</dt><dd>${E(o.type)}</dd><dt>Descrição</dt><dd>${E(o.description)}</dd><dt>Prioridade</dt><dd>${E(o.priority)}</dd><dt>Responsável</dt><dd>${E(userName(o.responsible))}</dd><dt>Planejado</dt><dd>${fDT(o.plannedStart)} → ${fDT(o.plannedEnd)}</dd><dt>Real</dt><dd>${fDT(o.actualStart)} → ${fDT(o.actualEnd)}</dd><dt>Duração total</dt><dd>${dur != null ? fN(dur) + ' h' : '—'} <small class="mut">(indisponibilidade/intervenção)</small></dd><dt>Trabalho técnico</dt><dd>${o.techHours != null ? fN(o.techHours) + ' h' : '—'}</dd>${f ? `<dt>Falha</dt><dd><a href="#" data-act="viewFailure" data-id="${f.id}">${E(f.number)}</a> — ${E(f.description)}</dd>` : ''}${p ? `<dt>Plano preventivo</dt><dd>${E(p.name)}</dd>` : ''}<dt>Procedimentos</dt><dd>${E(o.procedures || '—')}</dd><dt>Resultado</dt><dd>${E(o.result || '—')}</dd><dt>Recomendações</dt><dd>${E(o.recommendations || '—')}</dd>${o.cancelReason ? `<dt>Cancelamento</dt><dd>${E(o.cancelReason)}</dd>` : ''}</dl></div>
+  <div class="card"><h3>Custos</h3>${can('cost.view') ? `<dl class="kv"><dt>Peças e materiais</dt><dd>${fR(osParts(o))}</dd><dt>Mão de obra</dt><dd>${o.laborCost != null ? fR(o.laborCost) : '— (calculada ao concluir)'}</dd><dt>Terceiros</dt><dd>${fR(o.thirdCost || 0)}</dd><dt>Outros custos</dt><dd>${fR(o.otherCost || 0)}${o.otherDesc ? ` <small class="mut">(${E(o.otherDesc)})</small>` : ''}</dd><dt><b>Total</b></dt><dd><b>${fR(osCost(o))}</b> ${costsPosted(o) ? badge('lançado (real)', 'green') : badge('estimado', 'yellow')}</dd></dl>${costsPosted(o) ? `<p class="mut">Custos lançados no encerramento em ${fDT(o.closedAt || o.actualEnd)}.</p>` : o.status === 'Cancelada' ? '' : '<p class="mut">Os custos desta OS serão lançados (e passarão a contar como reais) ao encerrá-la.</p>'}` : '<p class="mut">Sem permissão para consultar custos.</p>'}
+  <h3 style="margin-top:14px">Histórico</h3><div class="tl">${o.history.slice().reverse().map(h => `<div class="ev"><b>${fDT(h.at)}</b> — ${E(h.status)} <small>(${E(userName(h.user))})</small>${h.note ? `<br><small>${E(h.note)}</small>` : ''}</div>`).join('')}</div></div></div>
+  <div class="card"><div class="row sp"><h3>Peças e materiais</h3>${!closed && can('os.update') ? btn('addOSItem', '+ Adicionar item', `data-id="${o.id}"`, 'btn pri') : ''}</div>${o.items.length ? `<table><thead><tr><th>Item</th><th class="num">Qtde</th><th class="num">Custo unit.</th><th class="num">Total</th><th>Estoque</th><th></th></tr></thead><tbody>${o.items.map(l => { const it = item(l.itemId); return `<tr><td>${E(it.code)} — ${E(it.name)}</td><td class="num">${fN(l.qty, 2)} ${E(it.unit)}</td><td class="num">${fR(l.unitCost)}</td><td class="num">${fR(l.qty * l.unitCost)}</td><td>${l.consumedQty ? badge('baixado ' + fN(l.consumedQty, 2), 'green') : badge('reservado p/ execução', 'gray')}</td><td>${!closed && can('os.update') ? btn('rmOSItem', 'Remover', `data-id="${o.id}" data-lid="${l.lid}"`) : ''}</td></tr>`; }).join('')}</tbody></table><p class="mut">A baixa no estoque ocorre ao iniciar a execução e é estornada em cancelamentos/remoções, sem movimentações duplicadas.</p>` : '<div class="empty">Nenhum material informado.</div>'}</div>`);
+}
+
+/* =====================================================================
+   QR CODES — criação de OS por equipamento e acesso rápido à OS
+   ===================================================================== */
+const QR_BASE_KEY = 'pcm_tornos_qr_base_url_v1';
+function getQRBaseUrl() {
+  const saved = (localStorage.getItem(QR_BASE_KEY) || '').trim();
+  if (saved) return saved.replace(/#.*$/, '').replace(/\/$/, '');
+  const current = location.href.split('#')[0];
+  const localHost = location.protocol === 'file:' || ['localhost', '127.0.0.1', '::1'].includes(location.hostname);
+  if (!localHost) return current.replace(/#.*$/, '').replace(/\/$/, '');
+  const entered = prompt('O PCM está aberto localmente e esse endereço não funciona ao escanear o QR em outro aparelho. Cole a URL completa do sistema, hospedada ou acessível pela rede Wi-Fi (ex.: http://192.168.1.20:8000/PCM_Tornos.html). Não use file:// nem localhost.');
+  if (!entered) throw new AppError('Geração do QR Code cancelada. Configure uma URL acessível pelo celular.');
+  let url;
+  try { url = new URL(entered.trim()); } catch (_) { throw new AppError('URL inválida. Informe o endereço completo começando com http:// ou https://.'); }
+  if (!['http:', 'https:'].includes(url.protocol) || ['localhost', '127.0.0.1', '::1'].includes(url.hostname)) throw new AppError('Use uma URL http:// ou https:// acessível pelo celular. Não use file:// ou localhost.');
+  url.hash = '';
+  localStorage.setItem(QR_BASE_KEY, url.href.replace(/\/$/, ''));
+  return url.href.replace(/\/$/, '');
+}
+function qrTarget(kind, id) {
+  const base = getQRBaseUrl();
+  return base + '#/' + (kind === 'eq' ? 'qr-eq/' : 'qr-os/') + encodeURIComponent(id);
+}
+ACT.configureQRBase = () => {
+  const current = localStorage.getItem(QR_BASE_KEY) || (location.protocol === 'http:' || location.protocol === 'https:' ? location.href.split('#')[0] : '');
+  const entered = prompt('Informe a URL completa do arquivo PCM que o celular consegue abrir. Ex.: https://seusistema.com/PCM_Tornos.html ou http://192.168.1.20:8000/PCM_Tornos.html. Deixe vazio para remover a configuração.', current);
+  if (entered === null) return;
+  if (!entered.trim()) { localStorage.removeItem(QR_BASE_KEY); toast('URL personalizada removida.'); refresh(); return; }
+  let url;
+  try { url = new URL(entered.trim()); } catch (_) { return toast('URL inválida. Informe o endereço completo com http:// ou https://.', 'err'); }
+  if (!['http:', 'https:'].includes(url.protocol) || ['localhost', '127.0.0.1', '::1'].includes(url.hostname)) return toast('Use um endereço http:// ou https:// acessível pelo celular, sem localhost.', 'err');
+  url.hash = '';
+  localStorage.setItem(QR_BASE_KEY, url.href.replace(/\/$/, ''));
+  toast('Endereço para QR Code salvo.');
+  refresh();
+};
+function showQR(title, payload, hint) {
+  const m = modal(title, `<p>${E(hint || 'Escaneie o código para abrir esta tela no sistema PCM.')}</p><div id="pcm-qrcode" style="display:flex;justify-content:center;padding:18px;background:#fff;min-height:220px"></div><p class="mut" style="text-align:center;word-break:break-all;font-size:.8rem">${E(payload)}</p><div class="mfoot"><button class="btn" data-act="printQR" type="button">Imprimir</button><button class="btn pri" data-act="closeModal" type="button">Fechar</button></div>`, false);
+  const target = m.querySelector('#pcm-qrcode');
+  if (typeof QRCode === 'undefined') { target.innerHTML = '<p class="note bad">Não foi possível carregar o gerador de QR Code. Verifique a conexão com a internet e tente novamente.</p>'; return; }
+  new QRCode(target, { text: payload, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+}
+ACT.showEqQR = d => { const e = eq(d.id); if (!e) throw new AppError('Equipamento não encontrado.'); showQR(`QR Code — ${e.code}`, qrTarget('eq', e.id), 'Aponte a câmera para este código para abrir o formulário de criação de OS deste torno.'); };
+ACT.showOSQR = d => { const o = db.workOrders.find(x => x.id === d.id); if (!o) throw new AppError('Ordem de serviço não encontrada.'); showQR(`QR Code — ${o.number}`, qrTarget('os', o.id), 'Aponte a câmera para abrir esta OS e acompanhar, atualizar ou encerrar a ordem.'); };
+ACT.printQR = () => { const node = document.querySelector('#pcm-qrcode'); if (!node) return; const img = node.querySelector('img'), canvas = node.querySelector('canvas'); const src = img?.src || (canvas ? canvas.toDataURL('image/png') : ''); if (!src) return toast('QR Code ainda não foi gerado.', 'err'); const w = window.open('', '_blank'); if (!w) return toast('Permita pop-ups para imprimir o QR Code.', 'err'); w.document.write(`<html><head><title>QR Code PCM</title><style>body{font-family:Arial;text-align:center;padding:30px}img{width:260px;height:260px}h2{margin-bottom:8px}</style></head><body><h2>PCM — QR Code</h2><img src="${src}"><script>window.onload=()=>window.print()<\/script></body></html>`); w.document.close(); };
+VIEWS.qr = () => {
+  const eqs = db.equipment.filter(e => !e.archived), os = db.workOrders.slice().reverse();
+  const qrBase = localStorage.getItem(QR_BASE_KEY) || (location.protocol !== 'file:' && !['localhost','127.0.0.1','::1'].includes(location.hostname) ? location.href.split('#')[0] : '');
+  setView(`<div class="row sp"><h1>QR Codes e acesso rápido</h1>${btn('configureQRBase','Configurar endereço do sistema','', 'btn')}</div><div class="note info">Use o QR do equipamento para abrir um formulário de nova ordem de serviço. Use o QR de uma OS para abrir o registro, acompanhar o andamento e concluir/encerrar a ordem conforme as permissões do usuário.</div><div class="note ${qrBase ? 'info' : 'bad'}">${qrBase ? `Endereço usado nos QR Codes: <b>${E(qrBase)}</b>` : 'O sistema está aberto como arquivo local ou localhost. Antes de gerar QR Codes para outro aparelho, configure um endereço HTTP/HTTPS acessível pelo celular.'} <br><b>Importante:</b> como esta versão guarda os dados no próprio navegador, configurar a URL permite abrir a aplicação, mas não compartilha automaticamente equipamentos e OS entre dispositivos. Para isso, é necessário um servidor e banco de dados compartilhado.</div><div class="card"><h3>Equipamentos</h3>${eqs.length ? `<div class="tbl"><table><thead><tr><th>Código</th><th>Equipamento</th><th>Local</th><th></th></tr></thead><tbody>${eqs.map(e=>`<tr><td>${E(e.code)}</td><td>${E(e.name)}</td><td>${E(e.location||'—')}</td><td>${btn('showEqQR','Gerar QR',`data-id="${e.id}"`,'btn pri')}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Cadastre um equipamento para gerar seu QR Code.</div>'}</div><div class="card"><h3>Ordens de serviço</h3>${os.length ? `<div class="tbl"><table><thead><tr><th>Número</th><th>Equipamento</th><th>Descrição</th><th>Status</th><th></th></tr></thead><tbody>${os.map(o=>`<tr><td><a href="#/os/${o.id}"><b>${E(o.number)}</b></a></td><td>${E(eqName(o.equipId))}</td><td>${E(o.description)}</td><td>${osBadge(o.status)}</td><td>${btn('showOSQR','Gerar QR',`data-id="${o.id}"`,'btn')}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Ainda não existem ordens de serviço.</div>'}</div><div class="note">Importante: este arquivo ainda usa armazenamento local do navegador. O QR Code abre o link do sistema, mas outro celular/computador não terá acesso aos mesmos registros enquanto o sistema não estiver hospedado com backend e banco de dados compartilhado. Se o sistema estiver aberto como arquivo local (file://), os QR Codes não funcionarão em outro dispositivo.</div>`);
+};
+VIEWS['qr-eq'] = id => {
+  const e = db.equipment.find(x => x.id === decodeURIComponent(id || ''));
+  if (!e) return setView('<div class="card"><h2>Equipamento não encontrado</h2><p>O registro pode não existir neste navegador. <a href="#/qr">Voltar aos QR Codes</a></p></div>');
+  setView(`<a href="#/qr">← QR Codes</a><div class="card"><h1>${E(e.code)} — ${E(e.name)}</h1><p>Você acessou o QR Code deste equipamento.</p><dl class="kv"><dt>Fabricante</dt><dd>${E(e.maker||'—')}</dd><dt>Modelo</dt><dd>${E(e.model||'—')}</dd><dt>Local</dt><dd>${E(e.location||'—')}</dd><dt>Estado</dt><dd>${statusBadge(e)}</dd></dl><div class="row" style="margin-top:16px">${can('os.write') ? btn('newOS','+ Gerar ordem de serviço',`data-eq="${e.id}"`,'btn pri') : '<p class="note">Seu perfil não tem permissão para criar OS.</p>'}<a class="btn" href="#/equipamentos/${e.id}">Ver equipamento</a></div></div><div class="note">Preencha a descrição, prioridade e planejamento. A OS será registrada no PCM deste navegador.</div>`);
+};
+VIEWS['qr-os'] = id => {
+  if (!can('os.view')) return setView('<div class="card"><h2>Acesso não autorizado</h2><p>Seu perfil não possui permissão para consultar ordens de serviço.</p></div>');
+  const o = db.workOrders.find(x => x.id === decodeURIComponent(id || ''));
+  if (!o) return setView('<div class="card"><h2>OS não encontrada</h2><p>O registro pode não existir neste navegador. <a href="#/qr">Voltar aos QR Codes</a></p></div>');
+  osDetail(o.id);
+};
+
+/* =====================================================================
+   PREVENTIVAS
+   ===================================================================== */
+const PLAN_FIELDS = () => [{ n: 'equipId', l: 'Equipamento', t: 'select', opts: () => equipOpts(), req: 1, blank: false }, { n: 'name', l: 'Atividade', req: 1 }, { n: 'component', l: 'Componente' }, { n: 'interval', l: 'Periodicidade', t: 'number', min: 1, req: 1 }, { n: 'periodType', l: 'Unidade', t: 'select', opts: ['dias', 'meses', 'horas'], req: 1, blank: false, hint: 'Siga o manual do fabricante e a avaliação técnica.' }, { n: 'lastDone', l: 'Última execução', t: 'date', hint: 'Para periodicidade por horas, usa as horas acumuladas atuais.' }, { n: 'responsible', l: 'Responsável', t: 'select', opts: () => userOpts() }, { n: 'estTime', l: 'Tempo estimado (h)', t: 'number', step: '0.1', min: 0 }, { n: 'procedure', l: 'Procedimento', t: 'textarea', full: 1 }, { n: 'tools', l: 'Ferramentas' }, { n: 'materials', l: 'Materiais' }, { n: 'safety', l: 'Procedimentos de segurança', t: 'textarea', full: 1 }];
+ACT.newPlan = d => ask('Nova atividade preventiva', PLAN_FIELDS(), { equipId: d.eq || '', periodType: 'dias' }, v => savePlan(v));
+ACT.editPlan = d => ask('Editar atividade', PLAN_FIELDS(), db.plans.find(p => p.id === d.id), v => savePlan({ ...v, id: d.id }));
+ACT.togglePlan = d => { const p = db.plans.find(x => x.id === d.id); savePlan({ ...p, status: p.status === 'inativo' ? 'ativo' : 'inativo' }); refresh(); };
+ACT.planToOS = d => { const id = osFromPlan(d.id); toast('OS preventiva criada.'); location.hash = '#/os/' + id; };
+ACT.planTemplates = d => ask('Modelos de atividades preventivas (editáveis depois)', [{ n: 'equipId', l: 'Equipamento', t: 'select', opts: () => equipOpts(), req: 1, blank: false }, { n: 'idx', l: 'Atividades', t: 'checks', opts: PLAN_TEMPLATES.map((t, i) => ({ v: i, l: `${t[0]} (${t[3]} ${t[4]})` })), req: 1 }], { equipId: d.eq || '' }, v => addPlanTemplates(v.equipId, v.idx.map(Number)), { submit: 'Adicionar' });
+VIEWS.preventivas = () => {
+  const late = db.plans.filter(p => p.status !== 'inativo' && planDue(p).state === 'vencida').length, soon = db.plans.filter(p => p.status !== 'inativo' && planDue(p).state === 'proxima').length;
+  setView(`<div class="row sp"><h1>Planejamento de manutenção preventiva</h1><div class="row">${can('plan.write') ? btn('newPlan', '+ Nova atividade', '', 'btn pri') + btn('planTemplates', 'Modelos editáveis', '', 'btn') : ''}</div></div><div class="grid g4">${kpi('Planos ativos', db.plans.filter(p => p.status !== 'inativo').length, '', 'blue')}${kpi('Vencidos', late, 'exigem OS', late ? 'red' : 'green')}${kpi('Próximos', soon, `em até ${db.settings.alertDays} dias`, soon ? 'yellow' : 'green')}</div>
+  <div class="note info" style="margin-top:12px">As atividades e periodicidades dos modelos são exemplos: ajuste conforme o manual do fabricante, as condições de uso e a avaliação técnica responsável.</div><div class="card">${table('pl', { rows: () => db.plans.filter(p => !eq(p.equipId).archived), cols: planCols(true), pageSize: 15, filters: [{ k: 'e', l: 'Equipamento', o: () => equipOpts(), get: p => p.equipId }, { k: 's', l: 'Situação', o: [{ v: 'vencida', l: 'Vencida' }, { v: 'proxima', l: 'Próxima' }, { v: 'ok', l: 'Em dia' }, { v: 'inativa', l: 'Inativa' }], get: p => planDue(p).state }] })}</div>`);
+};
+
+/* =====================================================================
+   ESTOQUE
+   ===================================================================== */
+const ITEM_FIELDS = isNew => [{ n: 'code', l: 'Código interno', req: 1 }, { n: 'name', l: 'Nome', req: 1 }, { n: 'category', l: 'Categoria', t: 'select', opts: ITEM_CATS, blank: false }, { n: 'maker', l: 'Fabricante' }, { n: 'brand', l: 'Marca' }, { n: 'spec', l: 'Modelo / especificação' }, { n: 'makerCode', l: 'Código do fabricante' }, { n: 'unit', l: 'Unidade', req: 1, hint: 'un, par, L, kg, m…' }, ...(isNew ? [{ n: 'qty', l: 'Quantidade inicial', t: 'number', step: '0.01', min: 0 }] : []), { n: 'minQty', l: 'Estoque mínimo', t: 'number', step: '0.01', min: 0 }, { n: 'price', l: 'Preço unitário atual (R$)', t: 'number', step: '0.01', min: 0, hint: 'Informe apenas valores confirmados; deixe vazio se não souber.' }, { n: 'supplierId', l: 'Fornecedor', t: 'select', opts: () => db.suppliers.map(s => ({ v: s.id, l: s.name })) }, { n: 'location', l: 'Localização' }, { n: 'compat', l: 'Compatibilidade (equipamentos)', hint: 'Vazio = não informado.' }, { n: 'description', l: 'Descrição', t: 'textarea', full: 1 }, { n: 'notes', l: 'Observações', t: 'textarea', full: 1 }];
+ACT.newItem = () => ask('Novo item de estoque', ITEM_FIELDS(true), { category: 'Outros', unit: 'un' }, v => saveItem({ ...v, active: true }));
+ACT.editItem = d => ask('Editar item', ITEM_FIELDS(false), item(d.id), v => saveItem({ ...v, id: d.id }));
+ACT.moveItem = d => ask('Movimentar estoque', [{ n: 'itemId', l: 'Item', t: 'select', req: 1, blank: false, opts: () => db.items.map(i => ({ v: i.id, l: `${i.code} — ${i.name} (saldo ${i.qty} ${i.unit})` })) }, { n: 'type', l: 'Tipo', t: 'select', req: 1, blank: false, opts: [{ v: 'entrada', l: 'Entrada' }, { v: 'saida', l: 'Saída' }, { v: 'ajuste', l: 'Ajuste de inventário (informar saldo contado)' }] }, { n: 'qty', l: 'Quantidade / saldo contado', t: 'number', step: '0.01', min: 0, req: 1 }, { n: 'equipId', l: 'Equipamento (saídas)', t: 'select', opts: () => equipOpts() }, { n: 'reason', l: 'Motivo / justificativa', t: 'textarea', full: 1, hint: 'Obrigatório nos ajustes.' }], { itemId: d.id || '', type: 'entrada' }, v => moveStock(v.itemId, v.type, v.qty, v.reason, v.equipId));
+ACT.priceHist = d => { const it = item(d.id); modal('Histórico de preço — ' + it.name, `<table><thead><tr><th>Data</th><th class="num">Preço</th><th>Fonte</th></tr></thead><tbody>${it.priceHistory.slice().reverse().map(h => `<tr><td>${fD(h.date)}</td><td class="num">${fR(h.price)}</td><td>${E(h.source)}</td></tr>`).join('')}</tbody></table>`); };
+const SUP_FIELDS = [{ n: 'name', l: 'Nome', req: 1 }, { n: 'contact', l: 'Contato' }, { n: 'phone', l: 'Telefone' }, { n: 'email', l: 'E-mail' }, { n: 'notes', l: 'Observações', t: 'textarea', full: 1 }];
+ACT.newSup = () => ask('Novo fornecedor', SUP_FIELDS, {}, v => saveSupplier(v));
+ACT.editSup = d => ask('Editar fornecedor', SUP_FIELDS, db.suppliers.find(s => s.id === d.id), v => saveSupplier({ ...v, id: d.id }));
+ACT.stockTab = d => { UI.tab.stock = d.t; refresh(); };
+VIEWS.estoque = () => {
+  const t = UI.tab.stock || 'itens', low = stockLow(), totalVal = sum(db.items, i => i.qty * (i.price || 0));
+  let body = '';
+  if (t === 'itens') body = `<div class="card">${table('it', { rows: () => db.items, filters: [{ k: 'c', l: 'Categoria', o: ITEM_CATS, get: i => i.category }, { k: 'a', l: 'Alerta', o: [{ v: 'low', l: 'Abaixo do mínimo' }], get: i => i.minQty > 0 && i.qty <= i.minQty ? 'low' : '' }], pageSize: 12, cols: [{ l: 'Código', v: i => i.code }, { l: 'Item', v: i => i.name, r: i => `<b>${E(i.name)}</b><br><small>${E(i.category)} · ${E(i.supplierId ? (db.suppliers.find(s => s.id === i.supplierId) || {}).name || '' : 'Fornecedor não informado')}</small>` }, { l: 'Saldo', num: 1, v: i => i.qty, r: i => `${fN(i.qty, 2)} ${E(i.unit)} ${i.minQty > 0 && i.qty <= i.minQty ? badge(i.qty <= 0 ? 'zerado' : 'mínimo', i.qty <= 0 ? 'red' : 'yellow') : ''}` }, { l: 'Mínimo', num: 1, v: i => i.minQty || 0, r: i => fN(i.minQty || 0, 2) }, { l: 'Preço unit.', num: 1, v: i => i.price ?? -1, r: i => i.price != null ? fR(i.price) : 'não informado' }, { l: 'Local', v: i => i.location || '' }, { l: 'Atualizado', v: i => i.updated, r: i => fD(i.updated) }, { l: '', r: i => `<div class="row">${can('stock.move') ? btn('moveItem', 'Movimentar', `data-id="${i.id}"`) : ''}${can('stock.write') ? btn('editItem', 'Editar', `data-id="${i.id}"`) : ''}${btn('priceHist', 'Preços', `data-id="${i.id}"`)}</div>` }] })}</div>`;
+  if (t === 'mov') body = `<div class="card">${table('mv', { rows: () => db.movements.slice().reverse(), dates: m => m.at, pageSize: 15, filters: [{ k: 't', l: 'Tipo', o: ['entrada', 'saida', 'ajuste', 'estorno'], get: m => m.type }, { k: 'i', l: 'Item', o: () => db.items.map(i => ({ v: i.id, l: i.name })), get: m => m.itemId }], cols: [{ l: 'Data', v: m => m.at, r: m => fDT(m.at) }, { l: 'Item', v: m => item(m.itemId)?.name || '' }, { l: 'Tipo', v: m => m.type, r: m => badge(m.type, { entrada: 'green', saida: 'orange', ajuste: 'blue', estorno: 'gray' }[m.type]) }, { l: 'Qtde', num: 1, v: m => m.delta, r: m => (m.delta > 0 ? '+' : '') + fN(m.delta, 2) }, { l: 'Saldo', num: 1, v: m => m.balance, r: m => fN(m.balance, 2) }, { l: 'Equipamento', v: m => m.equipId ? eq(m.equipId)?.code : '' }, { l: 'Ref.', v: m => m.ref }, { l: 'Motivo', v: m => m.reason }, { l: 'Usuário', v: m => userName(m.user) }] })}</div>`;
+  if (t === 'forn') body = `<div class="row sp"><span></span>${can('stock.write') ? btn('newSup', '+ Fornecedor', '', 'btn pri') : ''}</div><div class="card">${table('sp', { rows: () => db.suppliers, cols: [{ l: 'Fornecedor', v: s => s.name }, { l: 'Contato', v: s => s.contact || '' }, { l: 'Telefone', v: s => s.phone || '' }, { l: 'E-mail', v: s => s.email || '' }, { l: '', r: s => can('stock.write') ? btn('editSup', 'Editar', `data-id="${s.id}"`) : '' }] })}</div>`;
+  setView(`<div class="row sp"><h1>Peças, materiais e estoque</h1><div class="row">${can('stock.write') ? btn('newItem', '+ Novo item', '', 'btn pri') : ''}${can('stock.move') ? btn('moveItem', 'Movimentar', '', 'btn') : ''}</div></div><div class="grid g4">${kpi('Itens cadastrados', db.items.length, '', 'blue')}${kpi('Abaixo do mínimo', low.length, low.map(i => i.code).join(', '), low.length ? 'red' : 'green')}${can('cost.view') ? kpi('Valor em estoque', fR(totalVal), 'saldo × preço informado', 'blue') : ''}</div><div class="tabs" style="margin-top:14px">${[['itens', 'Itens'], ['mov', 'Movimentações'], ['forn', 'Fornecedores']].map(x => `<button class="${t === x[0] ? 'on' : ''}" data-act="stockTab" data-t="${x[0]}">${x[1]}</button>`).join('')}</div>${body}`);
+};
+
+/* =====================================================================
+   CUSTOS
+   ===================================================================== */
+const COST_FIELDS = () => [{ n: 'equipId', l: 'Equipamento', t: 'select', opts: () => equipOpts(), req: 1, blank: false }, { n: 'date', l: 'Data', t: 'date', req: 1 }, { n: 'category', l: 'Categoria', t: 'select', opts: COST_CATS, blank: false }, { n: 'type', l: 'Tipo de manutenção', t: 'select', opts: ['Preventiva', 'Corretiva', 'Outros'], blank: false }, { n: 'kind', l: 'Natureza', t: 'select', opts: [{ v: 'real', l: 'Real (efetivamente gasto)' }, { v: 'estimado', l: 'Estimado' }], blank: false }, { n: 'value', l: 'Valor (R$)', t: 'number', step: '0.01', min: 0, req: 1 }, { n: 'description', l: 'Descrição', full: 1 }];
+ACT.delCost = d => confirmBox('Excluir este lançamento?', () => deleteCost(d.id), 'Excluir');
+VIEWS.custos = () => {
+  const f = periodDefaults('cus'), ids = idsOf(f), per = mkPeriod(f.from, f.to), rows = costRows(ids, per), cs = costSummary(rows), ms = monthly(ids, f.from, f.to), c = compute(ids, per);
+  const ranking = Object.entries(cs.byEquip).sort((a, b) => b[1] - a[1]);
+  const perH = c.operated > 0 ? cs.real / c.operated : null;
+  setView(`<div class="row sp"><h1>Custos de manutenção</h1></div>${filterBar('cus')}
+  <div class="note info">Os custos são <b>lançados na própria OS, no momento do encerramento</b> (mão de obra, terceiros e outros; as peças já vêm dos materiais apontados) e passam a contar como reais. OS ainda não encerradas aparecem como estimadas. Não há mais lançamento avulso: para registrar um custo, use a OS correspondente. O valor de aquisição dos tornos <b>não</b> é despesa de manutenção.${db.settings.downtimeCostPerHour > 0 ? ` Custo de indisponibilidade estimado a ${fR(db.settings.downtimeCostPerHour)}/h (Configurações).` : ' Custo de indisponibilidade desativado (defina o valor/hora em Configurações para incluir).'}</div>
+  <div class="grid g4">${kpi('Custo real', fR(cs.real), 'período selecionado', 'blue')}${kpi('Custo estimado', fR(cs.est), 'não realizado', 'yellow')}${kpi('Preventiva (real)', fR(cs.prev), cs.prevPct != null ? fP(cs.prevPct) + ' do total' : '', 'green')}${kpi('Corretiva (real)', fR(cs.corr), cs.prevPct != null ? fP(100 - cs.prevPct) + ' do total' : '', 'red')}${kpi('Custo por hora operada', perH != null ? fR(perH) : '—', 'custo real / horas operadas', 'blue')}${kpi('Peças e materiais', fR(cs.parts), '', 'blue')}</div>
+  <div class="grid g2" style="margin-top:14px"><div class="card"><h3>Evolução mensal por tipo</h3>${chartBox('c1')}</div><div class="card"><h3>Por categoria</h3>${chartBox('c2')}</div><div class="card"><h3>Por equipamento (ranking)</h3>${chartBox('c3')}</div><div class="card"><h3>Custo acumulado por torno</h3>${chartBox('c4')}</div></div>
+  <div class="card"><h3>Lançamentos de custo</h3>${table('cr', { rows: () => rows, cols: [...costCols(), { l: '', r: r => r.id && can('cost.write') ? btn('delCost', 'Excluir', `data-id="${r.id}"`, 'btn sm bad') : '' }], dates: r => r.date, filters: [{ k: 'k', l: 'Natureza', o: [{ v: 'real', l: 'Real' }, { v: 'estimado', l: 'Estimado' }], get: r => r.kind }, { k: 'c', l: 'Categoria', o: COST_CATS, get: r => r.category }, { k: 't', l: 'Tipo', o: ['Preventiva', 'Corretiva', 'Preditiva', 'Melhoria', 'Outros'], get: r => r.type }] })}</div>`);
+  const lab = ms.map(m => m.label), by = t => ms.map(m => round(sum(m.costs.filter(r => r.type === t), r => r.value)));
+  mkChart('c1', { type: 'bar', data: { labels: lab, datasets: [{ label: 'Preventiva', data: by('Preventiva'), backgroundColor: COLORS.ok }, { label: 'Corretiva', data: by('Corretiva'), backgroundColor: COLORS.bad }, { label: 'Outros', data: ms.map(m => round(sum(m.costs.filter(r => !['Preventiva', 'Corretiva'].includes(r.type)), r => r.value))), backgroundColor: COLORS.gray }] }, options: { scales: { x: { stacked: true }, y: { stacked: true } } } });
+  mkChart('c2', { type: 'doughnut', data: { labels: Object.keys(cs.byCat), datasets: [{ data: Object.values(cs.byCat).map(v => round(v)), backgroundColor: PAL }] } });
+  mkChart('c3', { type: 'bar', data: { labels: ranking.map(r => eq(r[0]).code), datasets: [{ label: 'Custo (R$)', data: ranking.map(r => round(r[1])), backgroundColor: COLORS.pri2 }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } } } });
+  mkChart('c4', { type: 'line', data: { labels: lab, datasets: ids.map((id, i) => { let acc = 0; return { label: eq(id).code, data: ms.map(m => (acc += sum(m.costs.filter(r => r.equipId === id), r => r.value), round(acc))), borderColor: PAL[i % PAL.length], tension: .2 }; }) } });
+};
+
+/* =====================================================================
+   ANÁLISES: PARETO + CURVA DA BANHEIRA
+   ===================================================================== */
+VIEWS.analises = () => {
+  const f = periodDefaults('ana'), ids = idsOf(f), per = mkPeriod(f.from, f.to), g = UI.paG || 'component', m = UI.paM || 'count';
+  const pa = pareto(ids, per, g, m), bt = bathtub(activeIds()), unit = { count: 'ocorrências', downtime: 'horas de parada', cost: 'R$' }[m];
+  setView(`<h1>Análises de confiabilidade</h1>${filterBar('ana')}
+  <div class="card"><div class="row sp"><h3>Análise de Pareto</h3><div class="row noprint"><label>Agrupar por <select id="pg">${[['component', 'Componente'], ['cause', 'Causa'], ['equip', 'Equipamento']].map(x => `<option value="${x[0]}" ${g === x[0] ? 'selected' : ''}>${x[1]}</option>`).join('')}</select></label><label>Métrica <select id="pm">${[['count', 'Nº de falhas'], ['downtime', 'Horas de parada'], ['cost', 'Custo']].map(x => `<option value="${x[0]}" ${m === x[0] ? 'selected' : ''}>${x[1]}</option>`).join('')}</select></label><button class="btn" data-act="setPareto">Aplicar</button></div></div>${pa.length ? chartBox('a1') + `<p class="mut">Prioridade: itens à esquerda concentram a maior parte das ${unit}. Linha = % acumulado (referência de 80%).</p>` : '<div class="empty">Sem falhas no período.</div>'}</div>
+  <div class="card"><h3>Curva da banheira</h3><div class="note info">Modelo conceitual: mortalidade infantil (taxa decrescente), vida útil (taxa aproximadamente constante) e desgaste (taxa crescente). As fases só são estimadas com dados suficientes.</div>${chartBox('a2')}${bt.enough ? '<p>Pontos observados: taxa de falhas por 1000 h em cada faixa de 6 meses de idade dos tornos (frota ativa).</p>' : `<div class="note">Dados insuficientes para estimar as fases (${bt.totalF} falha(s) funcionais registradas; são necessárias ao menos 12 e 3 faixas de idade com horas registradas). Exibindo apenas a curva conceitual.</div>`}</div>`);
+  if (pa.length) mkChart('a1', { type: 'bar', data: { labels: pa.map(x => x.k), datasets: [{ label: unit, data: pa.map(x => round(x.v)), backgroundColor: COLORS.pri2, yAxisID: 'y' }, { type: 'line', label: '% acumulado', data: pa.map(x => round(x.cum, 1)), borderColor: COLORS.acc, yAxisID: 'y1' }] }, options: { scales: { y: { beginAtZero: true }, y1: { position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false } } } } });
+  const xs = Array.from({ length: 41 }, (_, i) => i / 40), curve = x => 3.2 * Math.exp(-x * 14) + 1 + 6.5 * Math.pow(Math.max(0, x - .72) / .28, 3);
+  const ds = [{ label: 'Curva conceitual (relativa)', data: xs.map(x => ({ x, y: round(curve(x), 3) })), borderColor: COLORS.gray, borderDash: [5, 4], pointRadius: 0, yAxisID: 'y2' }];
+  if (bt.enough) ds.unshift({ label: 'Observado (falhas / 1000 h)', data: bt.pts.map(p => ({ x: p.b * 0.5, y: round(p.rate, 3) })), borderColor: COLORS.bad, backgroundColor: COLORS.bad, showLine: true, yAxisID: 'y' });
+  mkChart('a2', { type: 'scatter', data: { datasets: ds }, options: { scales: { x: { type: 'linear', title: { display: true, text: bt.enough ? 'Idade do equipamento (anos)' : 'Tempo de vida (conceitual)' }, ticks: { display: bt.enough } }, y: { display: bt.enough, title: { display: true, text: 'Falhas / 1000 h' }, beginAtZero: true }, y2: { display: false } } } });
+};
+ACT.setPareto = () => { UI.paG = $('#pg').value; UI.paM = $('#pm').value; refresh(); };
+
+/* =====================================================================
+   RELATÓRIOS
+   ===================================================================== */
+const rpTitle = rp => rp.equips.length === 1 ? `${rp.equips[0].code} — ${rp.equips[0].name}` : `Frota (${rp.equips.length} tornos)`;
+const BG = { id: 'bg', beforeDraw(c) { const x = c.ctx; x.save(); x.globalCompositeOperation = 'destination-over'; x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.restore(); } };
+function reportHTML(rp) {
+  const c = rp.c, S = rp.settings, cost = can('cost.view'), v = rp.variation, vt = x => x == null ? '—' : (x > 0 ? '+' : '') + fN(x, 1) + '%';
+  const ident = rp.equips.length === 1 ? (e => [['Código / nome', `${e.code} — ${e.name}`], ['Fabricante / modelo', `${e.maker || '—'} / ${e.model || '—'}`], ['Nº de série', e.serial || '—'], ['Data de fabricação', fD(e.mfgDate)]])(rp.equips[0]) : [['Equipamentos', rp.equips.map(e => e.code).join(', ')]];
+  return `<div class="card" id="rp"><div class="row sp"><div><h2 style="margin:0">Relatório técnico de operação e manutenção</h2><small class="mut">Sistema PCM — Tornos Mecânicos · ${E(S.company)}</small></div><div class="mut">Gerado em ${fDT(rp.generatedAt)}<br>Responsável: ${E(rp.responsible)}</div></div>
+  <h3 style="margin-top:14px">1. Identificação e resumo operacional</h3><dl class="kv">${[...ident, ['Período', `${fD(rp.from)} a ${fD(rp.to)}`], ['Horas programadas / operadas', `${fN(c.scheduled)} h / ${fN(c.operated)} h`], ['Horas de parada (união das paradas)', fN(c.down) + ' h'], ['Falhas funcionais / manutenções (OS)', `${c.nFail} / ${rp.oss.length}`], ['Preventivas programadas / executadas', `${c.comp.prog} / ${c.comp.exec}`]].map(([k, x]) => `<dt>${k}</dt><dd>${E(x)}</dd>`).join('')}</dl>
+  <h3 style="margin-top:14px">2. Indicadores <small class="mut">(fatos registrados → cálculos)</small></h3>${notes(c.flags)}<table><thead><tr><th>Indicador</th><th class="num">Resultado</th><th class="num">Meta</th><th class="num">Período anterior</th><th class="num">Variação</th></tr></thead><tbody>
+  <tr><td>Disponibilidade (%)</td><td class="num">${fP(c.avail)}</td><td class="num">≥ ${fN(S.goalAvail, 0)}%</td><td class="num">${fP(rp.cp.avail)}</td><td class="num">${vt(v.avail)}</td></tr><tr><td>Disponibilidade operacional (%)</td><td class="num">${fP(c.availOp)}</td><td class="num">—</td><td class="num">${fP(rp.cp.availOp)}</td><td class="num">—</td></tr>
+  <tr><td>MTBF (h)</td><td class="num">${c.mtbf != null ? fN(c.mtbf) : 'não calculável'}</td><td class="num">≥ ${fN(S.goalMtbf, 0)}</td><td class="num">${fN(rp.cp.mtbf)}</td><td class="num">${vt(v.mtbf)}</td></tr><tr><td>MTTR (h)</td><td class="num">${c.mttr != null ? fN(c.mttr) : 'não calculável'}</td><td class="num">≤ ${fN(S.goalMttr, 0)}</td><td class="num">${fN(rp.cp.mttr)}</td><td class="num">${vt(v.mttr)}</td></tr>
+  <tr><td>Taxa de falhas λ (por 1000 h)</td><td class="num">${c.lambda != null ? fN(c.lambda1000, 2) : 'não calculável'}</td><td class="num">—</td><td class="num">${fN(rp.cp.lambda1000, 2)}</td><td class="num">—</td></tr><tr><td>Confiabilidade R(100 h)</td><td class="num">${c.lambda != null && c.reliableOK ? fP(reliability(c.lambda, 100) * 100) : 'não calculável com confiança'}</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+  <tr><td>Cumprimento preventivo (%)</td><td class="num">${fP(c.comp.pct)}</td><td class="num">≥ ${fN(S.goalCompliance, 0)}%</td><td class="num">${fP(rp.cp.comp.pct)}</td><td class="num">—</td></tr></tbody></table><p class="mut">Critérios: Disp = MTBF/(MTBF+MTTR); MTBF = horas operadas/falhas; MTTR = horas de reparo/falhas reparadas; λ = falhas/horas operadas; R(t)=e^(−λt) (λ constante). Período anterior = mesmo intervalo imediatamente anterior.</p>
+  <div class="grid g3"><div>${chartBox('rp1', 's')}</div><div>${chartBox('rp2', 's')}</div>${cost ? `<div>${chartBox('rp3', 's')}</div>` : ''}</div>
+  <h3 style="margin-top:14px">3. Histórico de falhas</h3>${rp.fails.length ? `<div style="overflow-x:auto"><table><thead><tr><th>Data</th><th>Torno</th><th>Componente</th><th>Causa</th><th>Solução</th><th class="num">Parada (h)</th>${cost ? '<th class="num">Custo</th>' : ''}</tr></thead><tbody>${rp.fails.map(f => `<tr><td>${fDT(f.date)}</td><td>${E(eq(f.equipId).code)}</td><td>${E(f.component || '—')}</td><td>${E(f.causeClass)}${f.cause ? ' — ' + E(f.cause) : ''}</td><td>${E(f.solution || '—')}</td><td class="num">${f.downtime != null ? fN(f.downtime) : '—'}</td>${cost ? `<td class="num">${fR(failureCost(f))}</td>` : ''}</tr>`).join('')}</tbody></table></div>` : '<p class="mut">Nenhuma falha no período.</p>'}
+  ${cost ? `<h3 style="margin-top:14px">4. Custos</h3><dl class="kv"><dt>Custo real</dt><dd>${fR(rp.cs.real)}</dd><dt>Estimado</dt><dd>${fR(rp.cs.est)}</dd><dt>Preventiva × corretiva (real)</dt><dd>${fR(rp.cs.prev)} × ${fR(rp.cs.corr)}</dd><dt>Peças e materiais</dt><dd>${fR(rp.cs.parts)}</dd></dl>` : ''}
+  <h3 style="margin-top:14px">5. Pontos de atenção</h3>${rp.off.length || rp.recurring.length || rp.c.comp.reasons.length ? '<ul>' + rp.off.map(x => `<li>${E(x)}</li>`).join('') + (rp.recurring.length ? `<li>Falhas recorrentes: ${E(rp.recurring.map(([k, n]) => k + ' (' + n + '×)').join(', '))}.</li>` : '') + rp.c.comp.reasons.map(x => `<li>Preventiva não realizada ${E(x.os)}: ${E(x.reason)}</li>`).join('') + '</ul>' : '<p class="mut">Nenhum indicador fora das metas.</p>'}
+  <h3>6. Recomendações <small class="mut">(sugestões de investigação, não causas confirmadas)</small></h3><ul>${rp.recs.map(x => `<li>${E(x)}</li>`).join('')}</ul><h3>7. Conclusão</h3><p>${E(rp.conclusion)}</p></div>`;
+}
+function renderReportCharts(rp) {
+  const lab = rp.months.map(m => m.label), c = { animation: false, plugins: { legend: { display: false }, title: { display: true } } };
+  const o = t => ({ animation: false, plugins: { legend: { display: false }, title: { display: true, text: t } } });
+  mkChart('rp1', { type: 'line', data: { labels: lab, datasets: [{ data: rp.months.map(m => round(m.c.avail)), borderColor: COLORS.pri2, spanGaps: true }, { data: lab.map(() => rp.settings.goalAvail), borderColor: COLORS.bad, borderDash: [6, 4], pointRadius: 0 }] }, options: o('Disponibilidade mensal (%) — meta tracejada'), plugins: [BG] });
+  mkChart('rp2', { type: 'bar', data: { labels: lab, datasets: [{ data: rp.months.map(m => m.c.nFail), backgroundColor: COLORS.acc }] }, options: { ...o('Falhas por mês'), scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }, plugins: [BG] });
+  if (can('cost.view')) mkChart('rp3', { type: 'bar', data: { labels: lab, datasets: [{ data: rp.months.map(m => round(sum(m.costs.filter(r => r.kind === 'real'), r => r.value))), backgroundColor: COLORS.pri2 }] }, options: o('Custo real mensal (R$)'), plugins: [BG] });
+}
+ACT.genReport = () => { const f = periodDefaults('rel'); f.equip = $('#fb-eq').value; f.from = $('#fb-from').value; f.to = $('#fb-to').value; refresh(); };
+VIEWS.relatorios = () => {
+  const f = periodDefaults('rel'); let rp; try { rp = buildReport(f.equip, f.from, f.to); } catch (e) { return setView(`<h1>Relatórios</h1>${filterBar('rel')}<div class="note bad">${E(e.message)}</div>`); }
+  UI.rp = rp;
+  setView(`<div class="row sp"><h1>Relatórios operacionais</h1><div class="row noprint">${btn('expPDF', '⬇ Exportar PDF', '', 'btn acc')}${btn('expXLSX', '⬇ Exportar Excel', '', 'btn pri')}</div></div>${filterBar('rel')}${reportHTML(rp)}`);
+  renderReportCharts(rp);
+};
+const pdfSafe = s => String(s ?? '').replace(/[^\x00-\xFF]/g, ch => ({ 'λ': 'lambda', '—': '-', '–': '-', '→': '->', '≥': '>=', '≤': '<=', '−': '-', '’': "'", '“': '"', '”': '"', '…': '...', '×': 'x' }[ch] || '?')).replace(/\s+/g, ' ');
+ACT.expPDF = () => {
+  const rp = UI.rp, lib = window.jspdf; if (!lib || !lib.jsPDF) throw new AppError('Biblioteca de PDF indisponível (é necessário acesso à internet para carregá-la).');
+  const doc = new lib.jsPDF({ unit: 'mm', format: 'a4' }), W = 210, M = 14, T = pdfSafe, c = rp.c, S = rp.settings, cost = can('cost.view'); let y = 26;
+  const need = n => { if (y + n > 282) { doc.addPage(); y = 26; } };
+  const h2 = t => { need(14); doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(31, 78, 121); doc.text(T(t), M, y); doc.setTextColor(0); y += 6; };
+  const para = (t, sz = 9.5) => { doc.setFont('helvetica', 'normal'); doc.setFontSize(sz); const ls = doc.splitTextToSize(T(t), W - 2 * M); need(ls.length * 4.4 + 2); doc.text(ls, M, y); y += ls.length * 4.4 + 2; };
+  const tbl = (head, body, o = {}) => { need(22); doc.autoTable({ startY: y, head: [head.map(T)], body: body.map(r => r.map(T)), margin: { left: M, right: M, top: 24 }, styles: { fontSize: 8, cellPadding: 1.6, overflow: 'linebreak' }, headStyles: { fillColor: [31, 78, 121] }, ...o }); y = doc.lastAutoTable.finalY + 5; };
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.text(T('Relatório técnico de operação e manutenção'), M, y); y += 7; doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text(T(rpTitle(rp) + '  |  Período: ' + fD(rp.from) + ' a ' + fD(rp.to)), M, y); y += 8;
+  h2('1. Identificação e resumo operacional');
+  const e0 = rp.equips.length === 1 ? rp.equips[0] : null;
+  tbl(['Item', 'Valor'], [['Sistema', 'PCM - Tornos Mecânicos'], ['Instituição', S.company], ['Equipamento', rpTitle(rp)], ...(e0 ? [['Fabricante / modelo', `${e0.maker || '-'} / ${e0.model || '-'}`], ['Nº de série', e0.serial || '-'], ['Data de fabricação', fD(e0.mfgDate)]] : []), ['Período', `${fD(rp.from)} a ${fD(rp.to)}`], ['Responsável', rp.responsible], ['Data de geração', fDT(rp.generatedAt)], ['Horas programadas / operadas', `${fN(c.scheduled)} h / ${fN(c.operated)} h`], ['Horas de parada', fN(c.down) + ' h'], ['Falhas funcionais / OS', `${c.nFail} / ${rp.oss.length}`], ['Preventivas programadas / executadas', `${c.comp.prog} / ${c.comp.exec}`]], { columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' } } });
+  h2('2. Indicadores');
+  const vt = x => x == null ? '-' : (x > 0 ? '+' : '') + fN(x, 1) + '%';
+  tbl(['Indicador', 'Resultado', 'Meta', 'Per. anterior', 'Variação'], [['Disponibilidade', fP(c.avail), '>= ' + fN(S.goalAvail, 0) + '%', fP(rp.cp.avail), vt(rp.variation.avail)], ['Disponibilidade operacional', fP(c.availOp), '-', fP(rp.cp.availOp), '-'], ['MTBF (h)', c.mtbf != null ? fN(c.mtbf) : 'nao calculavel', '>= ' + fN(S.goalMtbf, 0), fN(rp.cp.mtbf), vt(rp.variation.mtbf)], ['MTTR (h)', c.mttr != null ? fN(c.mttr) : 'nao calculavel', '<= ' + fN(S.goalMttr, 0), fN(rp.cp.mttr), vt(rp.variation.mttr)], ['Taxa de falhas (por 1000 h)', c.lambda != null ? fN(c.lambda1000, 2) : 'nao calculavel', '-', fN(rp.cp.lambda1000, 2), '-'], ['Confiabilidade R(100 h)', c.lambda != null && c.reliableOK ? fP(reliability(c.lambda, 100) * 100) : 'sem dados suficientes', '-', '-', '-'], ['Cumprimento preventivo', fP(c.comp.pct), '>= ' + fN(S.goalCompliance, 0) + '%', fP(rp.cp.comp.pct), '-']]);
+  para('Criterios: Disp = MTBF/(MTBF+MTTR); MTBF = horas operadas / falhas; MTTR = horas de reparo / falhas reparadas; lambda = falhas / horas operadas; R(t) = e^(-lambda*t), assumindo taxa de falhas constante. Periodo anterior = mesmo intervalo imediatamente anterior.', 8);
+  c.flags.forEach(f => para('Atenção: ' + f, 8.5));
+  h2('Gráficos'); need(56); let x = M; const ids = ['rp1', 'rp2'].concat(cost ? ['rp3'] : []), w = (W - 2 * M - 4 * (ids.length - 1)) / ids.length;
+  ids.forEach(id => { const cv = document.getElementById(id); if (cv) { try { doc.addImage(cv.toDataURL('image/png'), 'PNG', x, y, w, w * 0.62); } catch (e) { } } x += w + 4; }); y += w * 0.62 + 6;
+  h2('3. Histórico de falhas');
+  rp.fails.length ? tbl(['Data', 'Torno', 'Componente', 'Causa', 'Solução', 'Parada (h)'].concat(cost ? ['Custo'] : []), rp.fails.map(f => [fDT(f.date), eq(f.equipId).code, f.component || '-', f.causeClass + (f.cause ? ' - ' + f.cause : ''), f.solution || '-', f.downtime != null ? fN(f.downtime) : '-'].concat(cost ? [fR(failureCost(f))] : [])), { styles: { fontSize: 7, cellPadding: 1.3 } }) : para('Nenhuma falha registrada no período.');
+  h2('4. Ordens de serviço e intervenções');
+  rp.oss.length ? tbl(['OS', 'Torno', 'Tipo', 'Descrição', 'Status', 'Duração (h)', 'Técnico (h)'], rp.oss.map(o => [o.number, eq(o.equipId).code, o.type, o.description, o.status, osDuration(o) != null ? fN(osDuration(o)) : '-', o.techHours != null ? fN(o.techHours) : '-']), { styles: { fontSize: 7, cellPadding: 1.3 } }) : para('Nenhuma OS no período.');
+  if (cost) { h2('5. Custos'); tbl(['Categoria / tipo', 'Valor'], [['Custo real total', fR(rp.cs.real)], ['Custo estimado (não realizado)', fR(rp.cs.est)], ['Preventiva (real)', fR(rp.cs.prev)], ['Corretiva (real)', fR(rp.cs.corr)], ['Peças e materiais', fR(rp.cs.parts)], ...Object.entries(rp.cs.byCat).map(([k, v]) => ['Categoria: ' + k, fR(v)])], { columnStyles: { 1: { halign: 'right' } } }); para('O valor de aquisição dos equipamentos não é considerado despesa de manutenção.', 8); }
+  h2('6. Pontos de atenção');
+  const att = [...rp.off, ...(rp.recurring.length ? ['Falhas recorrentes: ' + rp.recurring.map(([k, n]) => k + ' (' + n + 'x)').join(', ') + '.'] : []), ...rp.c.comp.reasons.map(r => `Preventiva nao realizada ${r.os}: ${r.reason}`)]; (att.length ? att : ['Nenhum indicador fora das metas.']).forEach(a => para('- ' + a));
+  h2('7. Recomendações (sugestões de investigação, não causas confirmadas)'); rp.recs.forEach(r => para('- ' + r));
+  h2('8. Conclusão'); para(rp.conclusion); need(30); y += 10; doc.line(M, y, M + 70, y); doc.line(W - M - 60, y, W - M, y); y += 4; doc.setFontSize(8.5); doc.text(T('Responsável: ' + rp.responsible), M, y); doc.text(T('Data: ' + fD(rp.generatedAt)), W - M - 60, y);
+  const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFillColor(31, 78, 121); doc.rect(0, 0, W, 15, 'F'); doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(T('Sistema PCM - Tornos Mecânicos'), M, 9.5); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text(T(rpTitle(rp)), W - M, 9.5, { align: 'right' }); doc.setTextColor(110); doc.setFontSize(8); doc.text(T(`Página ${i} de ${n}  |  Gerado em ${fDT(rp.generatedAt)}`), W / 2, 291, { align: 'center' }); }
+  doc.save(`relatorio_pcm_${(e0 ? e0.code : 'frota')}_${rp.from}_${rp.to}.pdf`); toast('PDF gerado.');
+};
+const XF = { n1: '#,##0.0', n2: '#,##0.00', int: '0', date: 'dd/mm/yyyy', dt: 'dd/mm/yyyy hh:mm', brl: '"R$" #,##0.00', pct: '0.0"%"' };
+function mkSheet(head, rows, fmts, widths, totals) {
+  const ws = XLSX.utils.aoa_to_sheet([head, ...rows], { cellDates: true }), R = rows.length;
+  for (let r = 1; r <= R; r++) fmts.forEach((f, c) => { if (!f) return; const a = XLSX.utils.encode_cell({ r, c }); if (ws[a] && ws[a].v != null) ws[a].z = XF[f]; });
+  ws['!cols'] = head.map((h, i) => ({ wch: widths && widths[i] || Math.max(12, String(h).length + 2) }));
+  if (R) ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: R, c: head.length - 1 } }) };
+  if (totals && R) { ws[XLSX.utils.encode_cell({ r: R + 1, c: 0 })] = { t: 's', v: 'Total' }; totals.forEach(c => { const col = XLSX.utils.encode_col(c); ws[XLSX.utils.encode_cell({ r: R + 1, c })] = { t: 'n', f: `SUM(${col}2:${col}${R + 1})`, z: XF[fmts[c]] }; }); ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: R + 1, c: head.length - 1 } }); }
+  return ws;
+}
+const nv = v => v == null ? null : round(v, 4);
+ACT.expXLSX = () => {
+  const rp = UI.rp; if (typeof XLSX === 'undefined') throw new AppError('Biblioteca de Excel indisponível (é necessário acesso à internet para carregá-la).');
+  const c = rp.c, S = rp.settings, wb = XLSX.utils.book_new(), cost = can('cost.view');
+  XLSX.utils.book_append_sheet(wb, mkSheet(['Item', 'Valor'], [['Sistema', 'PCM — Tornos Mecânicos'], ['Instituição', S.company], ['Equipamento(s)', rpTitle(rp)], ['Período inicial', P(rp.from)], ['Período final', P(rp.to)], ['Responsável', rp.responsible], ['Data de geração', P(rp.generatedAt)], ['Horas programadas (h)', nv(c.scheduled)], ['Horas operadas (h)', nv(c.operated)], ['Horas de parada (h)', nv(c.down)], ['Falhas funcionais', c.nFail], ['Disponibilidade (%)', nv(c.avail)], ['MTBF (h)', nv(c.mtbf)], ['MTTR (h)', nv(c.mttr)], ['Cumprimento preventivo (%)', nv(c.comp.pct)], ['Conclusão', rp.conclusion], ...rp.recs.map((r, i) => ['Recomendação ' + (i + 1), r]), ...c.flags.map(f => ['Atenção', f])], ['', ''], [28, 90]), 'Resumo');
+  const mrows = rp.months.map(m => [m.label, nv(m.c.scheduled), nv(m.c.operated), m.c.nFail, m.c.nRep, nv(m.c.repH), nv(m.c.mtbf), nv(m.c.mttr), nv(m.c.availTheo), nv(m.c.availOp), nv(m.c.lambda1000), nv(m.c.comp.pct), m.c.comp.prog, m.c.comp.exec]);
+  mrows.push(['Período', nv(c.scheduled), nv(c.operated), c.nFail, c.nRep, nv(c.repH), nv(c.mtbf), nv(c.mttr), nv(c.availTheo), nv(c.availOp), nv(c.lambda1000), nv(c.comp.pct), c.comp.prog, c.comp.exec]);
+  XLSX.utils.book_append_sheet(wb, mkSheet(['Mês', 'Horas programadas', 'Horas operadas', 'Falhas', 'Falhas reparadas', 'Horas de reparo', 'MTBF (h)', 'MTTR (h)', 'Disp. teórica (%)', 'Disp. operacional (%)', 'λ (falhas/1000 h)', 'Cumprimento prev. (%)', 'Prev. programadas', 'Prev. executadas'], mrows, [null, 'n1', 'n1', 'int', 'int', 'n1', 'n1', 'n1', 'n2', 'n2', 'n2', 'n1', 'int', 'int']), 'Indicadores');
+  XLSX.utils.book_append_sheet(wb, mkSheet(['Nº', 'Torno', 'Data/hora', 'Defeito', 'Componente', 'Classe da causa', 'Causa', 'Criticidade', 'Parada início', 'Liberação', 'Indisponibilidade (h)', 'Reparo (h)', 'Solução', 'Situação', ...(cost ? ['Custo (R$)'] : [])], rp.fails.map(f => [f.number, eq(f.equipId).code, P(f.date), f.description, f.component || '', f.causeClass, f.cause || '', f.criticality, P(f.stopStart), P(f.stopEnd), f.downtime, f.repairHours, f.solution || '', f.status, ...(cost ? [nv(failureCost(f))] : [])]), [null, null, 'dt', null, null, null, null, null, 'dt', 'dt', 'n2', 'n2', null, null, 'brl'], [9, 9, 17, 34, 22, 14, 26, 11, 17, 17, 14, 11, 30, 12, 13]), 'Histórico de falhas');
+  XLSX.utils.book_append_sheet(wb, mkSheet(['OS', 'Torno', 'Tipo', 'Descrição', 'Prioridade', 'Planejado', 'Início real', 'Fim real', 'Duração total (h)', 'Trabalho técnico (h)', 'Status', ...(cost ? ['Custo (R$)'] : [])], rp.oss.map(o => [o.number, eq(o.equipId).code, o.type, o.description, o.priority, P(o.plannedStart), P(o.actualStart), P(o.actualEnd), nv(osDuration(o)), o.techHours, o.status, ...(cost ? [nv(osCost(o))] : [])]), [null, null, null, null, null, 'dt', 'dt', 'dt', 'n2', 'n2', null, 'brl'], [10, 9, 12, 38, 11, 17, 17, 17, 14, 14, 16, 13]), 'Ordens de serviço');
+  XLSX.utils.book_append_sheet(wb, mkSheet(['Torno', 'Atividade', 'Periodicidade', 'Unidade', 'Última execução', 'Próxima', 'Situação'], rp.plans.map(({ p, d }) => [eq(p.equipId).code, p.name, p.interval, p.periodType, p.lastDone ? P(p.lastDone) : null, d.due || null, d.state]), [null, null, 'int', null, 'date', 'date', null], [9, 36, 13, 10, 15, 13, 12]), 'Preventivas');
+  const pr = []; rp.oss.forEach(o => o.items.forEach(l => { const it = item(l.itemId); pr.push([o.number, eq(o.equipId).code, it.code, it.name, it.unit, l.qty, nv(l.unitCost), nv(l.qty * l.unitCost)]); }));
+  XLSX.utils.book_append_sheet(wb, mkSheet(['OS', 'Torno', 'Código', 'Item', 'Unid.', 'Quantidade', 'Custo unitário (R$)', 'Total (R$)'], pr, [null, null, null, null, null, 'n2', 'brl', 'brl'], [10, 9, 12, 36, 7, 12, 18, 14], [7]), 'Peças e materiais');
+  if (cost) XLSX.utils.book_append_sheet(wb, mkSheet(['Data', 'Torno', 'Categoria', 'Tipo', 'Natureza', 'Origem', 'Valor (R$)'], rp.rows.map(r => [P(r.date), eq(r.equipId).code, r.category, r.type, r.kind, r.source, nv(r.value)]), ['date', null, null, null, null, null, 'brl'], [13, 9, 24, 12, 11, 20, 14], [6]), 'Custos');
+  const meth = METH.flatMap(([t, ps]) => [[t, ''], ...ps.map(p => ['', p])]); XLSX.utils.book_append_sheet(wb, mkSheet(['Tema', 'Descrição'], meth, ['', ''], [34, 120]), 'Metodologia e fórmulas');
+  XLSX.writeFile(wb, `relatorio_pcm_${rp.equips.length === 1 ? rp.equips[0].code : 'frota'}_${rp.from}_${rp.to}.xlsx`, { cellDates: true }); toast('Excel gerado.');
+};
+
+/* =====================================================================
+   USUÁRIOS, CONFIGURAÇÕES E METODOLOGIA
+   ===================================================================== */
+const USER_FIELDS = isNew => [{ n: 'name', l: 'Nome', req: 1 }, { n: 'username', l: 'Usuário (login)', req: 1 }, { n: 'role', l: 'Perfil', t: 'select', opts: Object.entries(ROLES).map(([v, l]) => ({ v, l })), req: 1, blank: false }, { n: 'password', l: isNew ? 'Senha (mín. 8 caracteres)' : 'Nova senha (deixe vazio para manter)', t: 'password', req: isNew }, ...(isNew ? [] : [{ n: 'active', l: 'Usuário ativo', t: 'checkbox' }])];
+ACT.newUser = () => ask('Novo usuário', USER_FIELDS(true), { role: 'tecnico' }, v => saveUser(v));
+ACT.editUser = d => ask('Editar usuário', USER_FIELDS(false), db.users.find(u => u.id === d.id), v => saveUser({ ...v, id: d.id }));
+VIEWS.usuarios = () => setView(`<div class="row sp"><h1>Usuários e permissões</h1>${btn('newUser', '+ Novo usuário', '', 'btn pri')}</div><div class="card">${table('us', { rows: () => db.users, cols: [{ l: 'Nome', v: u => u.name }, { l: 'Usuário', v: u => u.username }, { l: 'Perfil', v: u => ROLES[u.role] }, { l: 'Situação', v: u => u.active, r: u => badge(u.active ? 'Ativo' : 'Inativo', u.active ? 'green' : 'gray') }, { l: '', r: u => btn('editUser', 'Editar', `data-id="${u.id}"`) }] })}</div>
+<div class="card"><h3>Matriz de perfis</h3><table><thead><tr><th>Perfil</th><th>Capacidades</th></tr></thead><tbody><tr><td>Administrador</td><td>Tudo: usuários, equipamentos, configurações, produtos e fornecedores.</td></tr><tr><td>Gestor de manutenção</td><td>Planeja atividades, gerencia OS, acompanha indicadores, custos e relatórios; cadastra equipamentos e estoque.</td></tr><tr><td>Técnico de manutenção</td><td>Registra/atualiza falhas e intervenções, atualiza OS, informa peças e tempos; consulta indicadores.</td></tr><tr><td>Operador</td><td>Consulta equipamentos, estado e atividades programadas; registra defeitos observados.</td></tr></tbody></table><div class="note">Protótipo sem servidor: as permissões são verificadas nas funções de dados (não apenas ocultando botões), mas, como tudo roda no navegador, não substituem a proteção de um backend real.</div></div>`);
+const SET_FIELDS = () => [{ n: 'company', l: 'Empresa / instituição', full: 1 }, { n: 'goalAvail', l: 'Meta de disponibilidade (%)', t: 'number', step: '0.1' }, { n: 'goalMtbf', l: 'Meta de MTBF (h)', t: 'number' }, { n: 'goalMttr', l: 'Meta de MTTR (h)', t: 'number' }, { n: 'goalCompliance', l: 'Meta de cumprimento preventivo (%)', t: 'number' }, { n: 'laborRate', l: 'Custo da mão de obra (R$/h)', t: 'number', step: '0.01' }, { n: 'downtimeCostPerHour', l: 'Custo de indisponibilidade (R$/h)', t: 'number', step: '0.01', hint: '0 = não considerar. Defina somente se houver metodologia.' }, { n: 'minFailures', l: 'Mín. de falhas p/ estimativas confiáveis', t: 'number' }, { n: 'minHours', l: 'Mín. de horas operadas p/ estimativas', t: 'number' }, { n: 'alertDays', l: 'Dias de antecedência p/ alerta preventivo', t: 'number' }];
+ACT.editSettings = () => ask('Configurações', SET_FIELDS(), db.settings, v => { Object.keys(v).forEach(k => { if (k !== 'company' && (v[k] == null || v[k] < 0)) throw new AppError('Valores numéricos inválidos.'); }); saveSettings(v); });
+ACT.backup = () => { const b = new Blob([JSON.stringify(db)], { type: 'application/json' }), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `backup_pcm_${toISO(new Date())}.json`; a.click(); toast('Backup exportado.'); };
+ACT.restoreFile = () => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.json'; i.onchange = () => { const r = new FileReader(); r.onload = () => run(() => { const o = JSON.parse(r.result); if (!o.users || !o.equipment) throw new AppError('Arquivo de backup inválido.'); confirmBox('Substituir os dados atuais pelo backup? Faça isso somente se tiver certeza. Usuários e senhas existentes são gerenciados no servidor; novos usuários devem ser criados pela tela Usuários.', () => { db = o; migrate(); saveDB(); toast('Restauração enviada ao servidor. Confira a mensagem de sincronização.'); }, 'Restaurar'); }); r.readAsText(i.files[0]); }; i.click(); };
+ACT.resetData = () => confirmBox('Esta ação apagará todos os equipamentos, registros de operação, falhas, ordens de serviço, preventivas, itens, movimentações, fornecedores e custos. Usuários e configurações serão mantidos. Esta ação não pode ser desfeita. Faça um backup antes de continuar. Deseja prosseguir?', () => { clearOperationalData(); toast('Registros operacionais apagados. Usuários e configurações preservados.'); location.hash = '#/dashboard'; boot(); }, 'Limpar dados operacionais');
+ACT.selfTest = () => { const r = runSelfTests(); modal('Testes automatizados dos cálculos', `<p><b>${r.filter(x => x.ok).length}/${r.length}</b> testes aprovados.</p>${r.map(x => `<div>${x.ok ? '✅' : '❌'} ${E(x.n)} ${x.info ? `<small class="mut">${E(x.info)}</small>` : ''}</div>`).join('')}`, true); };
+VIEWS.config = () => { const S = db.settings; setView(`<h1>Configurações</h1><div class="grid g2"><div class="card"><div class="row sp"><h3>Parâmetros e metas</h3>${btn('editSettings', 'Editar', '', 'btn pri')}</div><dl class="kv"><dt>Instituição</dt><dd>${E(S.company)}</dd><dt>Meta disponibilidade</dt><dd>${fN(S.goalAvail)}%</dd><dt>Meta MTBF</dt><dd>${fN(S.goalMtbf, 0)} h</dd><dt>Meta MTTR</dt><dd>${fN(S.goalMttr, 0)} h</dd><dt>Meta cumprimento</dt><dd>${fN(S.goalCompliance, 0)}%</dd><dt>Mão de obra</dt><dd>${fR(S.laborRate)}/h</dd><dt>Indisponibilidade</dt><dd>${S.downtimeCostPerHour ? fR(S.downtimeCostPerHour) + '/h' : 'não considerada'}</dd><dt>Mín. p/ confiabilidade</dt><dd>${S.minFailures} falhas · ${S.minHours} h</dd><dt>Alerta preventivo</dt><dd>${S.alertDays} dias</dd></dl></div>
+<div class="card"><h3>Gerenciamento de dados e backup</h3><p>Os dados operacionais são armazenados no <b>servidor central PostgreSQL</b> e compartilhados entre usuários autorizados. Exporte backups periodicamente. As credenciais e senhas dos usuários são gerenciadas pelo servidor e não são incluídas no arquivo de backup.</p><div class="row">${btn('backup', '⬇ Exportar backup (JSON)', '', 'btn pri')}${btn('restoreFile', '⬆ Restaurar backup', '', 'btn')}${btn('resetData', '🗑 Limpar dados operacionais', '', 'btn bad')}${btn('selfTest', 'Executar testes dos cálculos', '', 'btn')}</div><p class="note info">“Limpar dados operacionais” apaga equipamentos, operação, falhas, ordens de serviço, preventivas, estoque, fornecedores, custos e auditoria. Os usuários e as configurações são mantidos. A limpeza é irreversível; exporte o backup antes.</p><p class="note info">Modo conectado: as alterações são sincronizadas com o servidor. Se aparecer um erro de sincronização ou conflito, pare de editar e atualize a página antes de continuar. A disponibilidade depende do servidor e da conexão.</p></div></div>
+<div class="card"><h3>Registro de alterações (auditoria)</h3>${table('au', { rows: () => db.audit, dates: a => a.at, cols: [{ l: 'Quando', v: a => a.at, r: a => fDT(a.at) }, { l: 'Usuário', v: a => a.user }, { l: 'Ação', v: a => a.action }, { l: 'Entidade', v: a => a.entity }, { l: 'Referência', v: a => a.id }, { l: 'Detalhe', v: a => a.detail }] })}</div>`); };
+const METH = [
+  ['Definições operacionais', ['Falha funcional: ocorrência registrada que impede ou degrada a função do torno (marcada como “falha funcional”). Defeitos cosméticos/sem impacto podem ser registrados sem contar nos indicadores.', 'Tempo de operação: horas efetivamente operadas informadas nos registros de operação (proporcionais ao período filtrado).', 'Tempo de parada (indisponibilidade): intervalo entre parada e liberação das falhas com necessidade de parada; intervalos sobrepostos são unidos (nunca somados duas vezes).', 'Tempo de reparo (MTTR): horas de trabalho técnico efetivo no reparo — não é o tempo total de indisponibilidade (que inclui espera por peças, diagnóstico etc.).']],
+  ['Fórmulas', ['Disponibilidade (%) = MTBF / (MTBF + MTTR) × 100 (teórica).', 'Disponibilidade operacional (%) = (horas programadas − paradas) / horas programadas × 100.', 'MTBF = horas de operação / número de falhas. Sem falhas, não é calculável (não é zero).', 'MTTR = horas totais de reparo / número de falhas reparadas com tempo registrado.', 'Cumprimento (%) = preventivas concluídas / preventivas programadas × 100 (programadas = OS preventivas com início planejado no período; canceladas contam como não executadas).', 'Taxa de falhas λ = falhas / horas de operação (≈ 1/MTBF); exibida por hora e por 1000 h.', 'Confiabilidade R(t) = e^(−λt): pressupõe taxa de falhas constante; só apresentada como confiável com o mínimo de falhas e horas configurado.', 'Média da frota: calculada de forma agregada (somas de horas e falhas de todos os tornos), não pela média das médias.']],
+  ['Regras de negócio', ['Equipamentos com histórico não podem ser excluídos; usa-se arquivamento.', 'OS: Aberta → Planejada → Em execução → Aguardando peças → Concluída → Encerrada; cancelamento exige justificativa; o histórico é preservado.', 'Estoque: a baixa ocorre ao iniciar a execução; cancelamento/remoção estorna; edições/reaberturas não duplicam movimentos (controle por quantidade já consumida).', 'Custos: lançados na OS ao encerrá-la (peças + mão de obra + terceiros + outros); passam a ser reais somente com a OS encerrada, antes disso são estimados; não há lançamento avulso de custos; valor de aquisição não é despesa de manutenção; custo efetivo da falha só conta se não houver OS vinculada.', 'Preços, códigos e compatibilidades não são inventados: campos não confirmados ficam “não informado”.', 'Todos os indicadores usam os mesmos serviços de cálculo na tela, no PDF e no Excel.']],
+  ['Arquitetura e limites operacionais', ['Dados operacionais armazenados no PostgreSQL por API autenticada; a autorização é revalidada no servidor para cada gravação. As senhas são verificadas no servidor e hashes legados são atualizados para bcrypt após login.', 'Anexos limitados a 450 KB por arquivo. A exportação Excel não inclui gráficos nativos (os gráficos estão no PDF e na tela).', 'A hospedagem deve manter backups automáticos do PostgreSQL, HTTPS, variáveis de ambiente protegidas e monitoramento.']]
+];
+VIEWS.metodologia = () => setView(`<h1>Metodologia, fórmulas e regras de negócio</h1><div class="card prose">${METH.map(([t, ps]) => `<h3>${E(t)}</h3><ul>${ps.map(p => `<li>${E(p)}</li>`).join('')}</ul>`).join('')}</div>`);
+
+boot();
+
+</script>
+</body>
+</html>

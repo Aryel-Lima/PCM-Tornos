@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Importar dados — PCM Tornos</title>
+<style>
+:root{font-family:system-ui,Segoe UI,Arial,sans-serif;color:#1d2733;background:#f2f5f9}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:18px}.card{width:min(680px,100%);background:white;border:1px solid #dde3ea;border-radius:14px;padding:24px;box-shadow:0 8px 28px #14283d12}h1{font-size:1.4rem;color:#1f4e79;margin-top:0}p{line-height:1.5}.note{background:#fff8e1;border:1px solid #f0dc9a;border-radius:8px;padding:12px;font-size:.9rem}.field{display:grid;gap:6px;margin:14px 0}label{font-weight:650;font-size:.9rem}input{font:inherit;padding:10px;border:1px solid #c5cfda;border-radius:7px;width:100%}button{font:inherit;background:#1f4e79;color:white;border:0;border-radius:7px;padding:10px 16px;cursor:pointer}button:disabled{opacity:.6;cursor:wait}#status{white-space:pre-wrap;margin-top:14px;padding:10px;border-radius:7px;display:none}#status.ok{display:block;background:#e8f6ed;color:#14532d}#status.err{display:block;background:#fdecec;color:#8c1d1d}a{color:#2b6cb0}
+</style></head>
+<body><main class="card">
+<h1>Importação inicial do PCM — Tornos Mecânicos</h1>
+<p>Use esta página uma única vez para transferir o backup JSON do sistema antigo para o banco PostgreSQL central.</p>
+<div class="note"><b>Antes de importar:</b> abra a versão antiga do PCM no navegador onde estão os dados, entre em <i>Configurações → Exportar backup (JSON)</i> e salve o arquivo. A importação inicial só funciona se o banco remoto ainda não tiver sido inicializado.</div>
+<form id="form">
+<div class="field"><label for="token">Token de inicialização</label><input id="token" type="password" autocomplete="off" required placeholder="BOOTSTRAP_TOKEN configurado no servidor"></div>
+<div class="field"><label for="file">Backup JSON do PCM</label><input id="file" type="file" accept=".json,application/json" required></div>
+<button id="submit" type="submit">Importar dados para o servidor</button>
+</form><div id="status"></div>
+<p><a href="/PCM_Tornos_Cloud.html">Voltar ao sistema PCM</a></p>
+</main><script>
+const form=document.getElementById('form'), statusBox=document.getElementById('status'), submit=document.getElementById('submit');
+form.addEventListener('submit',async e=>{e.preventDefault();statusBox.className='';statusBox.style.display='none';submit.disabled=true;submit.textContent='Importando…';try{const file=document.getElementById('file').files[0];if(!file)throw new Error('Selecione o arquivo JSON.');const data=JSON.parse(await file.text());const response=await fetch('/api/bootstrap',{method:'POST',headers:{'Content-Type':'application/json','X-Bootstrap-Token':document.getElementById('token').value},body:JSON.stringify({data})});const result=await response.json();if(!response.ok)throw new Error(result.error||'Falha na importação.');statusBox.className='ok';statusBox.textContent=result.message+'\nPor segurança, troque o token de inicialização por outro valor aleatório nas variáveis do servidor (a variável precisa continuar definida). Depois, entre no PCM com uma conta do backup e altere a senha inicial, se ainda não tiver sido alterada.';}catch(err){statusBox.className='err';statusBox.textContent=err.message;}finally{submit.disabled=false;submit.textContent='Importar dados para o servidor';}});
+</script></body></html>
