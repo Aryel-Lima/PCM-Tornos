@@ -159,8 +159,8 @@ const ROLES = { admin: 'Administrador', gestor: 'Gestor de manutenção', tecnic
 const PERMS = {
   admin: ['*'],
   gestor: ['equip.write', 'failure.report', 'failure.write', 'os.view', 'os.write', 'os.update', 'plan.write', 'stock.view', 'stock.write', 'stock.move', 'cost.view', 'cost.write', 'indicator.view', 'indicator.write', 'report.view'],
-  tecnico: ['failure.report', 'failure.write', 'os.view', 'os.write', 'os.update', 'stock.view', 'indicator.view'],
-  operador: ['failure.report', 'os.view', 'os.write', 'os.update']
+  tecnico: ['failure.report', 'failure.write', 'os.view', 'os.write', 'os.update', 'plan.write' 'stock.view', 'indicator.view'],
+  operador: ['failure.report', 'os.view', 'os.write', 'os.update', 'plan.write']
 };
 const CRIT = ['Baixa', 'Média', 'Alta', 'Crítica'];
 const CAUSES = ['mecânica', 'elétrica', 'eletrônica', 'hidráulica', 'operacional', 'outra', 'pendente'];
