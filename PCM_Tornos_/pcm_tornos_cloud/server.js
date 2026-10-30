@@ -27,8 +27,8 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process
 const DEFAULT_PERMS = {
   admin: ['*'],
   gestor: ['equipment','records','failures','workOrders','plans','items','movements','suppliers','costs','audit','seq'],
-  tecnico: ['failures','workOrders','audit','seq'],
-  operador: ['failures','audit','seq']
+  tecnico: ['failures','workOrders','items','movements','audit','seq'],
+  operador: ['failures','workOrders','items','movements','audit','seq']
 };
 const PUBLIC_USER_FIELDS = ['id','name','username','role','active'];
 const publicUsers = users => (users || []).map(u => Object.fromEntries(PUBLIC_USER_FIELDS.filter(k => u[k] !== undefined).map(k => [k,u[k]])));
@@ -47,7 +47,9 @@ function dataForRole(data, role, userId) {
   }
   if (role === 'tecnico') copy.plans = [];
   if (role === 'operador') {
-    copy.records = []; copy.workOrders = []; copy.plans = []; copy.items = []; copy.movements = [];
+    copy.records = []; copy.plans = []; copy.movements = [];
+    // O operador recebe os dados mínimos dos itens para vincular materiais às OS, sem acesso ao módulo de estoque/custos.
+    copy.items = (copy.items || []).map(i => ({ id: i.id, code: i.code, name: i.name, unit: i.unit, qty: i.qty, active: i.active, price: 0 }));
     copy.equipment = copy.equipment.map(e => { const x = { ...e }; delete x.acqValue; delete x.estValue; return x; });
   }
   return copy;
